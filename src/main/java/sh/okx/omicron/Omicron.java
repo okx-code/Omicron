@@ -59,6 +59,7 @@ public class Omicron {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 data.save();
+                feedManager.save();
             } catch (IOException e) {
                 e.printStackTrace();
             }

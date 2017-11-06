@@ -13,9 +13,9 @@ import java.util.*;
 public class RssHandler {
     private Date lastCheck = new Date();
     private URL feedUrl;
-    private Set<RssListener> listeners = new HashSet<>();
+    private Set<AbstractRssListener> listeners = new HashSet<>();
 
-    public void addListener(RssListener listener) {
+    public void addListener(AbstractRssListener listener) {
         listeners.add(listener);
     }
 

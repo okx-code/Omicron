@@ -3,7 +3,7 @@ package sh.okx.omicron.command;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import sh.okx.omicron.Omicron;
-import sh.okx.omicron.command.commands.AddFeedCommand;
+import sh.okx.omicron.command.commands.FeedCommand;
 import sh.okx.omicron.command.commands.PingCommand;
 import sh.okx.omicron.trivia.TriviaCommand;
 
@@ -17,7 +17,7 @@ public class CommandManager extends ListenerAdapter {
     public CommandManager(String prefix, Omicron omicron) {
         this.commands = Set.of(
                 new PingCommand(omicron),
-                new AddFeedCommand(omicron),
+                new FeedCommand(omicron),
                 new TriviaCommand(omicron));
         this.prefix = prefix;
         this.omicron = omicron;

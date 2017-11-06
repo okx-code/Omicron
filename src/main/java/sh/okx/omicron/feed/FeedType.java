@@ -1,4 +1,5 @@
 package sh.okx.omicron.feed;
 
-public interface FeedListener {
+public enum FeedType {
+    RSS
 }
