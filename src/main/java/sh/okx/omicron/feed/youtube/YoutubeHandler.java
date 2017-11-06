@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class YoutubeHandler implements FeedHandler {
-    private DateTime lastCheck = new DateTime(System.currentTimeMillis()-10000000);
+    private DateTime lastCheck = new DateTime(System.currentTimeMillis());
     private TimerTask task;
 
     private Set<AbstractYoutubeListener> listeners = new HashSet<>();
@@ -52,7 +52,7 @@ public class YoutubeHandler implements FeedHandler {
                         });
                     }
 
-                    lastCheck = results.get(results.size()-1).getSnippet().getPublishedAt();
+                    lastCheck = results.get(0).getSnippet().getPublishedAt();
                 } catch (IOException e) {
                     e.printStackTrace();
                     this.cancel();

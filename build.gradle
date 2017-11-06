@@ -25,3 +25,12 @@ dependencies {
     compile group: 'rome', name: 'rome', version: '+'
     compile 'com.google.apis:google-api-services-youtube:v3-rev187-1.23.0'
 }
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'sh.okx.omicron.Omicron'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

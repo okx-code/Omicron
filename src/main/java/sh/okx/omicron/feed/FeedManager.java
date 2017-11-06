@@ -78,6 +78,8 @@ public class FeedManager {
     }
 
     public void loadFeed(String prefix, FeedType type, TextChannel channel, String content) throws MalformedURLException {
+        prefix = prefix.replace("<everyone>", "@everyone");
+
         FeedHandler feedHandler;
 
         switch(type) {
