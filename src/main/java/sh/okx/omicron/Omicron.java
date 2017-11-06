@@ -7,6 +7,7 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import org.apache.commons.io.IOUtils;
 import sh.okx.omicron.command.CommandManager;
 import sh.okx.omicron.feed.FeedManager;
+import sh.okx.omicron.trivia.TriviaManager;
 import sh.okx.omicron.util.Data;
 
 import javax.security.auth.login.LoginException;
@@ -18,20 +19,27 @@ public class Omicron {
                 .setToken(IOUtils.toString(Omicron.class.getResourceAsStream("/token.txt"), "UTF-8"))
                 .buildBlocking();
 
-        Omicron omicron = new Omicron();
-
+        Omicron omicron = new Omicron(jda);
         omicron.setupData();
 
         jda.addEventListener(new CommandManager("o/", omicron));
     }
 
+    private JDA jda;
     private Data data;
     private FeedManager feedManager;
+    private TriviaManager triviaManager;
 
-    public Omicron() throws IOException {
+    public Omicron(JDA jda) throws IOException {
         setupData();
 
-        feedManager = new FeedManager(this);
+        this.jda = jda;
+        this.feedManager = new FeedManager(this);
+        this.triviaManager = new TriviaManager(this);
+    }
+
+    public JDA getJDA() {
+        return jda;
     }
 
     public Data getData() {
@@ -40,6 +48,10 @@ public class Omicron {
 
     public FeedManager getFeedManager() {
         return feedManager;
+    }
+
+    public TriviaManager getTriviaManager() {
+        return triviaManager;
     }
 
     private void setupData() throws IOException {
