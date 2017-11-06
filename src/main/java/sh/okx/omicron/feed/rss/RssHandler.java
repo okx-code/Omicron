@@ -5,26 +5,23 @@ import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedInput;
 import com.sun.syndication.io.XmlReader;
+import sh.okx.omicron.feed.FeedHandler;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
-public class RssHandler {
+public class RssHandler implements FeedHandler {
     private Date lastCheck = new Date();
-    private URL feedUrl;
     private Set<AbstractRssListener> listeners = new HashSet<>();
+    private TimerTask task;
 
     public void addListener(AbstractRssListener listener) {
         listeners.add(listener);
     }
 
     public RssHandler(URL feedUrl) {
-        this.feedUrl = feedUrl;
-    }
-
-    public void start() {
-        new Timer().scheduleAtFixedRate(new TimerTask() {
+        this.task = new TimerTask() {
             @Override
             public void run() {
                 try {
@@ -38,7 +35,10 @@ public class RssHandler {
                             continue;
                         }
 
-                        listeners.forEach(listener -> listener.on(feed, entry));
+                        listeners.forEach(listener -> {
+                            listener.handlePrefix();
+                            listener.on(feed, entry);
+                        });
                     }
 
                     lastCheck = entries.get(entries.size()-1).getPublishedDate();
@@ -48,7 +48,17 @@ public class RssHandler {
                     return;
                 }
             }
-        }, 0, 5*1000);
+        };
+    }
+
+    @Override
+    public void cancel() {
+        task.cancel();
+    }
+
+    @Override
+    public void start() {
+        new Timer().scheduleAtFixedRate(task, 0, 5*1000);
 
     }
 

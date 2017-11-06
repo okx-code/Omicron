@@ -3,7 +3,11 @@ package sh.okx.omicron.util;
 public class Util {
     public static String limit(String string, int length) {
         string = string.trim();
-        return string.substring(0, Math.min(string.length(), length - 3)).trim() + "...";
+        String substring = string.substring(0, Math.min(string.length(), length - 3));
+        if(substring.length() < string.length()) {
+            return substring.trim() + "...";
+        }
+        return string;
     }
 
     public static String stripHtml(String string) {

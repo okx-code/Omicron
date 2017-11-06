@@ -10,10 +10,8 @@ import sh.okx.omicron.util.Util;
 import java.util.List;
 
 public class RssListener extends AbstractRssListener {
-    private TextChannel channel;
-
-    public RssListener(TextChannel channel) {
-        this.channel = channel;
+    public RssListener(String prefix, TextChannel channel) {
+        super(prefix, channel);
     }
 
     @Override

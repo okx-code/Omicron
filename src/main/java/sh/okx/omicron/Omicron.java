@@ -21,14 +21,13 @@ public class Omicron {
 
         Omicron omicron = new Omicron(jda);
         omicron.setupData();
-
-        jda.addEventListener(new CommandManager("o/", omicron));
     }
 
     private JDA jda;
     private Data data;
     private FeedManager feedManager;
     private TriviaManager triviaManager;
+    private CommandManager commandManager;
 
     public Omicron(JDA jda) throws IOException {
         setupData();
@@ -36,6 +35,7 @@ public class Omicron {
         this.jda = jda;
         this.feedManager = new FeedManager(this);
         this.triviaManager = new TriviaManager(this);
+        this.commandManager = new CommandManager("o/", this);
     }
 
     public JDA getJDA() {
@@ -54,12 +54,17 @@ public class Omicron {
         return triviaManager;
     }
 
+    public CommandManager getCommandManager() {
+        return commandManager;
+    }
+
     private void setupData() throws IOException {
         data = new Data("data.json");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Shutting down and saving data.");
             try {
-                data.save();
                 feedManager.save();
+                data.save();
             } catch (IOException e) {
                 e.printStackTrace();
             }

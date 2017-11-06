@@ -21,6 +21,8 @@ public class CommandManager extends ListenerAdapter {
                 new TriviaCommand(omicron));
         this.prefix = prefix;
         this.omicron = omicron;
+
+        omicron.getJDA().addEventListener(this);
     }
 
     public String getPrefix() {
@@ -33,7 +35,7 @@ public class CommandManager extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent e) {
-        String[] parts = e.getMessage().getContent().split(" ", 2);
+        String[] parts = e.getMessage().getRawContent().split(" ", 2);
         if(!parts[0].startsWith(prefix)) {
             return;
         }

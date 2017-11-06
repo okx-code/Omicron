@@ -1,34 +1,37 @@
 package sh.okx.omicron.feed;
 
-import java.net.URL;
-
 public class Feed {
+    private String prefix;
     private FeedType type;
-    private URL url;
+    private String location;
     private String channel;
-    private FeedListener listener;
+    private FeedHandler handler;
 
-    public Feed(FeedType type, URL url, String channel, FeedListener listener) {
+    public Feed(String prefix, FeedType type, String location, String channel, FeedHandler handler) {
+        this.prefix = prefix;
         this.type = type;
-        this.url = url;
+        this.location = location;
         this.channel = channel;
-        this.listener = listener;
+        this.handler = handler;
     }
 
+    public String getPrefix() {
+        return prefix;
+    }
 
     public FeedType getType() {
         return type;
     }
 
-    public URL getUrl() {
-        return url;
+    public String getLocation() {
+        return location;
     }
 
     public String getChannel() {
         return channel;
     }
 
-    public FeedListener getListener() {
-        return listener;
+    public FeedHandler getHandler() {
+        return handler;
     }
 }

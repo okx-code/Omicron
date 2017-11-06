@@ -7,7 +7,9 @@ import sh.okx.omicron.Omicron;
 import sh.okx.omicron.feed.rss.AbstractRssListener;
 import sh.okx.omicron.feed.rss.RssHandler;
 import sh.okx.omicron.feed.rss.RssListener;
-import sh.okx.omicron.util.Data;
+import sh.okx.omicron.feed.youtube.AbstractYoutubeListener;
+import sh.okx.omicron.feed.youtube.YoutubeHandler;
+import sh.okx.omicron.feed.youtube.YoutubeListener;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,9 +32,10 @@ public class FeedManager {
             JSONObject feed = feeds.getJSONObject(i);
 
             try {
-                loadFeed(FeedType.valueOf(feed.getString("type")),
+                loadFeed(feed.getString("prefix"),
+                        FeedType.valueOf(feed.getString("type")),
                         omicron.getJDA().getTextChannelById(feed.getString("channel")),
-                        new URL(feed.getString("url")));
+                        feed.getString("url"));
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
@@ -44,41 +47,29 @@ public class FeedManager {
         for(Feed feed : feeds) {
             JSONObject feedJson = new JSONObject();
             feedJson.put("type", feed.getType().name());
-            feedJson.put("url", feed.getUrl().toString());
+            feedJson.put("url", feed.getLocation());
             feedJson.put("channel", feed.getChannel());
+            feedJson.put("prefix", feed.getPrefix());
+            feedsJson.put(feedJson);
         }
 
         omicron.getData().set("feeds", feedsJson);
     }
 
-    public void addFeed(TextChannel channel, String content, FeedType type) {
-        Data data = omicron.getData();
-
-        JSONArray channelData = data.getJSONArray("feeds");
-
-        JSONObject feed = new JSONObject();
-        feed.put("type", type.name());
-        feed.put("url", content);
-        feed.put("channel", channel.getId());
-
-        channelData.put(feed);
-        data.set(channel.getId(), feed);
-
-        try {
-            loadFeed(type, channel, new URL(content));
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return;
-        }
+    public void removeFeed(String channel, String content) {
+        feeds.removeIf(feed -> {
+            boolean remove = feed.getLocation().equalsIgnoreCase(content) &&
+                    feed.getChannel().equals(channel);
+            if(remove) {
+                feed.getHandler().cancel();
+            }
+            return remove;
+        });
     }
 
-    public void removeFeed(String content) {
-        feeds.removeIf(feed -> feed.getUrl().toString().equalsIgnoreCase(content));
-    }
-
-    public boolean hasFeed(String url) {
+    public boolean hasFeed(String channel, String location) {
         for(Feed feed : feeds) {
-            if(feed.getUrl().toString().equalsIgnoreCase(url)) {
+            if(feed.getLocation().equalsIgnoreCase(location) && feed.getChannel().equals(channel)) {
                 return true;
             }
         }
@@ -86,21 +77,28 @@ public class FeedManager {
         return false;
     }
 
-    public void loadFeed(FeedType type, TextChannel channel, URL url) {
-        FeedListener listener;
+    public void loadFeed(String prefix, FeedType type, TextChannel channel, String content) throws MalformedURLException {
+        FeedHandler feedHandler;
 
         switch(type) {
             case RSS:
-                RssHandler handler = new RssHandler(url);
-                AbstractRssListener rssListener = new RssListener(channel);
-                listener = rssListener;
-                handler.addListener(rssListener);
-                handler.start();
+                RssHandler rssHandler = new RssHandler(new URL(content));
+                AbstractRssListener rssListener = new RssListener(prefix, channel);
+                feedHandler = rssHandler;
+                rssHandler.addListener(rssListener);
+                rssHandler.start();
+                break;
+            case YOUTUBE:
+                YoutubeHandler youtubeHandler = new YoutubeHandler(content);
+                AbstractYoutubeListener youtubeListener = new YoutubeListener(prefix, channel);
+                feedHandler = youtubeHandler;
+                youtubeHandler.addListener(youtubeListener);
+                youtubeHandler.start();
                 break;
             default:
                 return;
         }
 
-        feeds.add(new Feed(type, url, channel.getId(), listener));
+        feeds.add(new Feed(prefix, type, content, channel.getId(), feedHandler));
     }
 }

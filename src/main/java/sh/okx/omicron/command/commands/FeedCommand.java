@@ -1,3 +1,4 @@
+
 package sh.okx.omicron.command.commands;
 
 import net.dv8tion.jda.core.entities.Guild;
@@ -9,6 +10,8 @@ import sh.okx.omicron.command.Command;
 import sh.okx.omicron.feed.FeedType;
 import sh.okx.omicron.feed.rss.RssHandler;
 
+import java.net.MalformedURLException;
+
 public class FeedCommand extends Command {
     public FeedCommand(Omicron omicron) {
         super(omicron, "feed");
@@ -16,17 +19,36 @@ public class FeedCommand extends Command {
 
     @Override
     public void run(Omicron omicron, Guild guild, TextChannel channel, Member member, Message message, String content) {
-        if(!RssHandler.isValid(content)) {
+        String[] parts = content.split(" ", 3);
+        if(parts.length < 2) {
+            channel.sendMessage("Usage: " +
+                    omicron.getCommandManager().getPrefix() + "**" + name + "** <type=rss/youtube> <feed/user id>");
+        }
+        FeedType type;
+        try {
+            type = FeedType.valueOf(parts[0].toUpperCase());
+        } catch(IllegalArgumentException e) {
+            channel.sendMessage("Invalid type. Valid types are: RSS and YouTube.").queue();
+            return;
+        }
+
+        if(!RssHandler.isValid(content) && type == FeedType.RSS) {
             channel.sendMessage("Invalid feed URL.").queue();
             return;
         }
 
-        if(omicron.getFeedManager().hasFeed(content)) {
-            omicron.getFeedManager().addFeed(channel, content, FeedType.RSS);
-            channel.sendMessage("Added feed from URL: " + content).queue();
+        if(!omicron.getFeedManager().hasFeed(channel.getId(), parts[1])) {
+            try {
+                omicron.getFeedManager().loadFeed(parts.length < 3 ? "" : parts[2], type, channel, parts[1]);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                channel.sendMessage("An error occured loading the feed.").queue();
+                return;
+            }
+            channel.sendMessage("Added feed from: " + parts[1]).queue();
         } else {
-            omicron.getFeedManager().removeFeed(content);
-            channel.sendMessage("Removed feed from URL: " + content).queue();
+            omicron.getFeedManager().removeFeed(channel.getId(), parts[1]);
+            channel.sendMessage("Removed feed from: " + parts[1]).queue();
         }
     }
 }
