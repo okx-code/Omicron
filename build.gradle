@@ -1,0 +1,22 @@
+group 'sh.okx'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'application'
+
+mainClassName = 'sh.okx.omicron.Omicron'
+
+sourceCompatibility = 1.9
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile 'net.dv8tion:JDA:+'
+    compile 'commons-io:commons-io:+'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.1'
+}
