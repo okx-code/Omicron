@@ -2,17 +2,21 @@ package sh.okx.omicron.command;
 
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import sh.okx.omicron.Omicron;
+import sh.okx.omicron.command.commands.AddFeedCommand;
 import sh.okx.omicron.command.commands.PingCommand;
 
 import java.util.Set;
 
 public class CommandManager extends ListenerAdapter {
+    private Omicron omicron;
     private Set<Command> commands;
     private String prefix;
 
-    public CommandManager(String prefix) {
-        this.commands = Set.of(new PingCommand());
+    public CommandManager(String prefix, Omicron omicron) {
+        this.commands = Set.of(new PingCommand(omicron), new AddFeedCommand(omicron));
         this.prefix = prefix;
+        this.omicron = omicron;
     }
 
     public String getPrefix() {
@@ -35,7 +39,8 @@ public class CommandManager extends ListenerAdapter {
                 continue;
             }
 
-            command.run(e.getGuild(), e.getTextChannel(), e.getMember(), e.getMessage());
+            command.run(omicron, e.getGuild(), e.getTextChannel(), e.getMember(), e.getMessage(),
+                    parts.length > 1 ? parts[1] : "");
             return;
         }
     }

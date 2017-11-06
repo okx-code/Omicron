@@ -1,1 +1,4 @@
 /src/main/resources/token.txt
+.gradle/
+.idea/
+build/

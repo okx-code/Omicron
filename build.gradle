@@ -19,4 +19,6 @@ dependencies {
     compile 'net.dv8tion:JDA:+'
     compile 'commons-io:commons-io:+'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.1'
+    compile group: 'org.json', name: 'json', version: '+'
+    compile group: 'rome', name: 'rome', version: '+'
 }
