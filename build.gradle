@@ -24,6 +24,7 @@ dependencies {
     compile group: 'org.json', name: 'json', version: '+'
     compile group: 'rome', name: 'rome', version: '+'
     compile 'com.google.apis:google-api-services-youtube:v3-rev187-1.23.0'
+    compile 'net.dean.jraw:JRAW:+'
 }
 
 task fatJar(type: Jar) {

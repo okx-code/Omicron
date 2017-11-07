@@ -1,5 +1,5 @@
 
-package sh.okx.omicron.command.commands;
+package sh.okx.omicron.feed;
 
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
@@ -7,7 +7,6 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Command;
-import sh.okx.omicron.feed.FeedType;
 import sh.okx.omicron.feed.rss.RssHandler;
 
 import java.net.MalformedURLException;
@@ -21,14 +20,16 @@ public class FeedCommand extends Command {
     public void run(Omicron omicron, Guild guild, TextChannel channel, Member member, Message message, String content) {
         String[] parts = content.split(" ", 3);
         if(parts.length < 2) {
-            channel.sendMessage("Usage: " +
-                    omicron.getCommandManager().getPrefix() + "**" + name + "** <type=rss/youtube> <feed/user id>");
+            channel.sendMessage("Usage: **" +
+                    omicron.getCommandManager().getPrefix() + name +
+                    "** <type=rss/youtube/reddit> <feed/user id/subreddit>").queue();
+            return;
         }
         FeedType type;
         try {
             type = FeedType.valueOf(parts[0].toUpperCase());
         } catch(IllegalArgumentException e) {
-            channel.sendMessage("Invalid type. Valid types are: RSS and YouTube.").queue();
+            channel.sendMessage("Invalid type. Valid types are: RSS, YouTube, and Reddit.").queue();
             return;
         }
 

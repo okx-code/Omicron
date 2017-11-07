@@ -7,6 +7,7 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import org.apache.commons.io.IOUtils;
 import sh.okx.omicron.command.CommandManager;
 import sh.okx.omicron.feed.FeedManager;
+import sh.okx.omicron.roles.RoleManager;
 import sh.okx.omicron.trivia.TriviaManager;
 import sh.okx.omicron.util.Data;
 
@@ -28,6 +29,7 @@ public class Omicron {
     private FeedManager feedManager;
     private TriviaManager triviaManager;
     private CommandManager commandManager;
+    private RoleManager roleManager;
 
     public Omicron(JDA jda) throws IOException {
         setupData();
@@ -36,6 +38,7 @@ public class Omicron {
         this.feedManager = new FeedManager(this);
         this.triviaManager = new TriviaManager(this);
         this.commandManager = new CommandManager("o/", this);
+        this.roleManager = new RoleManager(this);
     }
 
     public JDA getJDA() {
@@ -48,6 +51,10 @@ public class Omicron {
 
     public FeedManager getFeedManager() {
         return feedManager;
+    }
+
+    public RoleManager getRoleManager() {
+        return roleManager;
     }
 
     public TriviaManager getTriviaManager() {
@@ -63,6 +70,7 @@ public class Omicron {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Shutting down and saving data.");
             try {
+                roleManager.save();
                 feedManager.save();
                 data.save();
             } catch (IOException e) {

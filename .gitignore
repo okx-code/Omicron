@@ -1,5 +1,6 @@
 /src/main/resources/token.txt
 /src/main/resources/google_api_key.txt
+/src/main/resources/reddit_authentication.txt
 .gradle/
 .idea/
 build/

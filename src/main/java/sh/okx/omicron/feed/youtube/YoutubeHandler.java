@@ -16,6 +16,7 @@ import java.util.*;
 
 public class YoutubeHandler implements FeedHandler {
     private DateTime lastCheck = new DateTime(System.currentTimeMillis());
+    private boolean cancelled;
     private TimerTask task;
 
     private Set<AbstractYoutubeListener> listeners = new HashSet<>();
@@ -56,7 +57,7 @@ public class YoutubeHandler implements FeedHandler {
                 } catch (IOException e) {
                     e.printStackTrace();
                     this.cancel();
-                    return;
+                    cancelled = true;
                 }
             }
         };
@@ -64,12 +65,17 @@ public class YoutubeHandler implements FeedHandler {
 
     @Override
     public void cancel() {
-        task.cancel();
+        cancelled = task.cancel();
     }
 
     @Override
     public void start() {
         new Timer().scheduleAtFixedRate(task, 0, 120*1000);
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
     }
 
     private int compare(DateTime thisTime, DateTime anotherTime) {

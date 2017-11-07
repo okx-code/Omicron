@@ -20,7 +20,7 @@ public class YoutubeListener extends AbstractYoutubeListener {
 
         eb.setAuthor(result.getChannelTitle(), "https://www.youtube.com/channel/" + result.getChannelId());
         eb.setTitle(result.getTitle(), "https://youtube.com/watch?v=" + id.getVideoId());
-        eb.setImage(result.getThumbnails().getMedium().getUrl());
+        eb.setImage(result.getThumbnails().getHigh().getUrl());
         eb.setDescription(Util.limit(result.getDescription(), 100));
         eb.setTimestamp(Instant.ofEpochMilli(result.getPublishedAt().getValue()));
 

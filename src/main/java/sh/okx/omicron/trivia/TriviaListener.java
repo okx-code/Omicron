@@ -29,7 +29,7 @@ public class TriviaListener extends ListenerAdapter {
             channel.sendMessage("**" + e.getUser().getName() + "** got the correct answer (**" +
                     letter +"**)!").queue();
         } else {
-            channel.sendMessage("**" + e.getUser().getName() + "** answered incorrectly." +
+            channel.sendMessage("**" + e.getUser().getName() + "** answered incorrectly. " +
                     "The correct answer was **" + letter + "**.").queue();
         }
 

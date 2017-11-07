@@ -4,6 +4,9 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import sh.okx.omicron.Omicron;
+import sh.okx.omicron.feed.reddit.AbstractRedditListener;
+import sh.okx.omicron.feed.reddit.RedditHandler;
+import sh.okx.omicron.feed.reddit.RedditListener;
 import sh.okx.omicron.feed.rss.AbstractRssListener;
 import sh.okx.omicron.feed.rss.RssHandler;
 import sh.okx.omicron.feed.rss.RssListener;
@@ -45,6 +48,10 @@ public class FeedManager {
     public void save() {
         JSONArray feedsJson = new JSONArray();
         for(Feed feed : feeds) {
+            if(feed.getHandler().isCancelled()) {
+                continue;
+            }
+
             JSONObject feedJson = new JSONObject();
             feedJson.put("type", feed.getType().name());
             feedJson.put("url", feed.getLocation());
@@ -96,6 +103,13 @@ public class FeedManager {
                 feedHandler = youtubeHandler;
                 youtubeHandler.addListener(youtubeListener);
                 youtubeHandler.start();
+                break;
+            case REDDIT:
+                RedditHandler redditHandler = new RedditHandler(content);
+                AbstractRedditListener redditListener = new RedditListener(prefix, channel);
+                feedHandler = redditHandler;
+                redditHandler.addListener(redditListener);
+                redditHandler.start();
                 break;
             default:
                 return;

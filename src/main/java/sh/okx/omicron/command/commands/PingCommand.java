@@ -14,6 +14,8 @@ public class PingCommand extends Command {
 
     @Override
     public void run(Omicron omicron, Guild guild, TextChannel channel, Member member, Message message, String content) {
-        channel.sendMessage("Pong").queue();
+        channel.sendMessage("WebSocket Ping: " +omicron.getJDA().getPing() + "ms | " +
+                "Message Ping: " + (System.currentTimeMillis()-message.getCreationTime().toInstant().toEpochMilli()) +
+                "ms.").queue();
     }
 }

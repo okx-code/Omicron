@@ -13,6 +13,7 @@ import java.util.*;
 
 public class RssHandler implements FeedHandler {
     private Date lastCheck = new Date();
+    private boolean cancelled = false;
     private Set<AbstractRssListener> listeners = new HashSet<>();
     private TimerTask task;
 
@@ -45,7 +46,7 @@ public class RssHandler implements FeedHandler {
                 } catch (FeedException | IOException e) {
                     e.printStackTrace();
                     this.cancel();
-                    return;
+                    cancelled = true;
                 }
             }
         };
@@ -53,13 +54,17 @@ public class RssHandler implements FeedHandler {
 
     @Override
     public void cancel() {
-        task.cancel();
+        cancelled = task.cancel();
     }
 
     @Override
     public void start() {
         new Timer().scheduleAtFixedRate(task, 0, 5*1000);
+    }
 
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
     }
 
     public static boolean isValid(String feedUrlString) {
