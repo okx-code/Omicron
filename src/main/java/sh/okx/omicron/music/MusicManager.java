@@ -10,10 +10,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.entities.VoiceChannel;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.managers.AudioManager;
 import sh.okx.omicron.Omicron;
 
@@ -66,7 +63,7 @@ public class MusicManager {
         return musicManager.player.getPlayingTrack();
     }
 
-    public void loadAndPlay(User requester, final TextChannel channel, final String trackUrl) {
+    public void loadAndPlay(Member requester, final TextChannel channel, final String trackUrl) {
         GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
 
 
@@ -87,7 +84,7 @@ public class MusicManager {
                 "https://youtube.com/watch?v=" + video.getId(), new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                if(!play(channel, musicManager, new TrackData(track, requester))) {
+                if(!play(requester, channel, musicManager, new TrackData(track, requester.getUser()))) {
                     channel.sendMessage("Could not connect to any voice channels. Do I have permission? " +
                             "Do any exist?").queue();
                 } else {
@@ -141,8 +138,10 @@ public class MusicManager {
         });
     }
 
-    private boolean play(TextChannel channel, GuildMusicManager musicManager, TrackData track) {
-        if(!connectToFirstVoiceChannel(channel.getGuild().getAudioManager())) {
+    private boolean play(Member member, TextChannel channel, GuildMusicManager musicManager, TrackData track) {
+        if(member.getVoiceState().inVoiceChannel()) {
+            channel.getGuild().getAudioManager().openAudioConnection(member.getVoiceState().getChannel());
+        } else if(!connectToFirstVoiceChannel(channel.getGuild().getAudioManager())) {
             return false;
         }
 

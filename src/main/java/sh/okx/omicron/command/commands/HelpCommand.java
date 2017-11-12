@@ -1,3 +1,4 @@
+
 package sh.okx.omicron.command.commands;
 
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -21,7 +22,22 @@ public class HelpCommand extends Command {
                     "**o/trivia <category>** for a question in a specific category.",
             "role", "Give a default role to people when they join\n" +
                     "To set the role, use **o/role default <role id/name/mention>**.\n" +
-                    "To check what the default role currently is, use **o/role get**.");
+                    "To check what the default role currently is, use **o/role get**.",
+            "think", "Have a think **o/think**.",
+            /* Music */
+            "play", "Play a song. This only supports YouTube videos currently.\n" +
+                    "The bot will automatically join whichever voice channel you are in," +
+                    "or the first it has access to if you are not in a voice channel\n" +
+                    "Usage: **o/play <url / search videos>**.",
+            "loop", "Toggle looping. When enabled, this will repeat the next queued song forever.\n" +
+                    "Usage: **o/loop**.",
+            "join", "Join the channel of whoever sent the message.",
+            "remove", "Remove the song at the specified position in the queue.\n" +
+                    "You must either have manage channels permission or have added the song to the queue.\n" +
+                    "Usage: **o/remove <index>**",
+            "skip", "Skips the currently playing song. People with manage channels permission will instantly skip, " +
+                    "otherwise at least 50% of people in the bot's voice channel must vote to skip.\n" +
+                    "Usage: **o/skip**");
 
     public HelpCommand(Omicron omicron) {
         super(omicron, "help");
@@ -37,7 +53,16 @@ public class HelpCommand extends Command {
                 .setDescription(help.getOrDefault(content,
                         prefix + "feed <type=rss/youtube/reddit> <feed/user id/subreddit> <prefix>\n" +
                                 prefix + "trivia <category>\n" +
-                                prefix + "role <method=default/get> <role if using method 'default'>"))
+                                prefix + "role <method=default/get> <role if using method 'default'>\n" +
+                                prefix + "think"))
+                .addField("Music",
+                            prefix + "play <youtube url/search>\n" +
+                                prefix + "loop\n" +
+                                prefix + "join\n" +
+                                prefix + "queue\n" +
+                                prefix + "remove <index>\n" +
+                                prefix + "skip",
+                        false)
                 .setFooter("Use " + prefix + name + " <command> to get help with a specific command,\n" +
                         "eg " + prefix + name + " feed", null);
         channel.sendMessage(eb.build()).queue();
