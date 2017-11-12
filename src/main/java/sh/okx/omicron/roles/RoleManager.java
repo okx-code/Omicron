@@ -21,7 +21,6 @@ public class RoleManager {
         JSONArray rolesJson = omicron.getData().getJSONArray("roles");
         for(int i = 0; i < rolesJson.length(); i++) {
             JSONObject roleJson = rolesJson.getJSONObject(i);
-
             roles.put(roleJson.getString("guild"), roleJson.getString("role"));
         }
     }

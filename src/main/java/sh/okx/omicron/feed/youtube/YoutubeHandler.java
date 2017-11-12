@@ -26,11 +26,12 @@ public class YoutubeHandler implements FeedHandler {
     }
 
     public YoutubeHandler(String id) {
-        YouTube youtube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(), request -> {})
-                .setApplicationName("omicron-okx").build();
         task = new TimerTask() {
             @Override
             public void run() {
+                YouTube youtube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(), request -> {})
+                        .setApplicationName("omicron-okx").build();
+
                 try {
                     YouTube.Search.List search = youtube.search().list("id,snippet");
                     search.setKey(IOUtils.toString(Omicron.class.getResourceAsStream("/google_api_key.txt"), "UTF-8"));

@@ -3,9 +3,11 @@ package sh.okx.omicron.command;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import sh.okx.omicron.Omicron;
-import sh.okx.omicron.feed.FeedCommand;
 import sh.okx.omicron.command.commands.HelpCommand;
 import sh.okx.omicron.command.commands.PingCommand;
+import sh.okx.omicron.command.commands.ThinkCommand;
+import sh.okx.omicron.feed.FeedCommand;
+import sh.okx.omicron.music.commands.*;
 import sh.okx.omicron.roles.RoleCommand;
 import sh.okx.omicron.trivia.TriviaCommand;
 
@@ -22,6 +24,14 @@ public class CommandManager extends ListenerAdapter {
                 new FeedCommand(omicron),
                 new TriviaCommand(omicron),
                 new RoleCommand(omicron),
+                new ThinkCommand(omicron),
+                new PlayCommand(omicron),
+                new SkipCommand(omicron),
+                new QueueCommand(omicron),
+                new LoopCommand(omicron),
+                new VolumeCommand(omicron),
+                new RemoveCommand(omicron),
+                new JoinCommand(omicron),
                 new HelpCommand(omicron));
         this.prefix = prefix;
         this.omicron = omicron;

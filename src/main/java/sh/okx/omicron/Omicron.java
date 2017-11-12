@@ -7,6 +7,7 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import org.apache.commons.io.IOUtils;
 import sh.okx.omicron.command.CommandManager;
 import sh.okx.omicron.feed.FeedManager;
+import sh.okx.omicron.music.MusicManager;
 import sh.okx.omicron.roles.RoleManager;
 import sh.okx.omicron.trivia.TriviaManager;
 import sh.okx.omicron.util.Data;
@@ -28,6 +29,7 @@ public class Omicron {
     private Data data;
     private FeedManager feedManager;
     private TriviaManager triviaManager;
+    private MusicManager musicManager;
     private CommandManager commandManager;
     private RoleManager roleManager;
 
@@ -37,6 +39,7 @@ public class Omicron {
         this.jda = jda;
         this.feedManager = new FeedManager(this);
         this.triviaManager = new TriviaManager(this);
+        this.musicManager = new MusicManager(this);
         this.commandManager = new CommandManager("o/", this);
         this.roleManager = new RoleManager(this);
     }
@@ -59,6 +62,10 @@ public class Omicron {
 
     public TriviaManager getTriviaManager() {
         return triviaManager;
+    }
+
+    public MusicManager getMusicManager() {
+        return musicManager;
     }
 
     public CommandManager getCommandManager() {
