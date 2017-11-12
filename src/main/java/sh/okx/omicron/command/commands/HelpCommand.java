@@ -48,23 +48,27 @@ public class HelpCommand extends Command {
         String prefix = omicron.getCommandManager().getPrefix();
         content = content.replaceFirst(prefix, "");
 
-        EmbedBuilder eb = new EmbedBuilder()
-                .setTitle(help.containsKey(content) ? "o/" + content : "Omicron")
-                .setDescription(help.getOrDefault(content,
-                        prefix + "feed <type=rss/youtube/reddit> <feed/user id/subreddit> <prefix>\n" +
-                                prefix + "trivia <category>\n" +
-                                prefix + "role <method=default/get> <role if using method 'default'>\n" +
-                                prefix + "think"))
-                .addField("Music",
-                            prefix + "play <youtube url/search>\n" +
-                                prefix + "loop\n" +
-                                prefix + "join\n" +
-                                prefix + "queue\n" +
-                                prefix + "remove <index>\n" +
-                                prefix + "skip",
-                        false)
-                .setFooter("Use " + prefix + name + " <command> to get help with a specific command,\n" +
-                        "eg " + prefix + name + " feed", null);
+        EmbedBuilder eb = new EmbedBuilder();
+        if(help.containsKey(content)) {
+            eb.setTitle(prefix + content);
+            eb.setDescription(help.get(content));
+        } else {
+            eb.setTitle("Omicron");
+            eb.setDescription(prefix + "feed <type=rss/youtube/reddit> <feed/user id/subreddit> <prefix>\n" +
+                    prefix + "trivia <category>\n" +
+                    prefix + "role <method=default/get> <role if using method 'default'>\n" +
+                    prefix + "think");
+            eb.addField("Music",
+                    prefix + "play <youtube url/search>\n" +
+                            prefix + "loop\n" +
+                            prefix + "join\n" +
+                            prefix + "queue\n" +
+                            prefix + "remove <index>\n" +
+                            prefix + "skip",
+                    false);
+        }
+        eb.setFooter("Use " + prefix + name + " <command> to get help with a specific command,\n" +
+            "eg " + prefix + name + " feed", null);
         channel.sendMessage(eb.build()).queue();
     }
 }

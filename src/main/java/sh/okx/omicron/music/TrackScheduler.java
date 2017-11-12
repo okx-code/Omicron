@@ -71,7 +71,7 @@ public class TrackScheduler extends AudioEventAdapter {
             poll = looping ? queue.get(0) : queue.remove(0);
         }
 
-        player.startTrack(poll.getTrack(), false);
+        player.startTrack(poll.getTrack().makeClone(), false);
     }
 
     public void clearAndStop() {
