@@ -64,14 +64,14 @@ public class TrackScheduler extends AudioEventAdapter {
      * Start the next track, stopping the current one if it is playing.
      */
     public void nextTrack() {
-        TrackData poll;
+        AudioTrack poll;
         if(queue.size() < 1) {
-            poll = new TrackData(null, null);
+            poll = null;
         } else {
-            poll = looping ? queue.get(0) : queue.remove(0);
+            poll = looping ? queue.get(0).getTrack().makeClone() : queue.remove(0).getTrack();
         }
 
-        player.startTrack(poll.getTrack().makeClone(), false);
+        player.startTrack(poll, false);
     }
 
     public void clearAndStop() {
