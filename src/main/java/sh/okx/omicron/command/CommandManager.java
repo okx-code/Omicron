@@ -6,6 +6,7 @@ import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.commands.HelpCommand;
 import sh.okx.omicron.command.commands.PingCommand;
 import sh.okx.omicron.command.commands.ThinkCommand;
+import sh.okx.omicron.custom.CustomCommand;
 import sh.okx.omicron.feed.FeedCommand;
 import sh.okx.omicron.music.commands.*;
 import sh.okx.omicron.roles.RoleCommand;
@@ -32,6 +33,8 @@ public class CommandManager extends ListenerAdapter {
                 new VolumeCommand(omicron),
                 new RemoveCommand(omicron),
                 new JoinCommand(omicron),
+                new PauseCommand(omicron),
+                new CustomCommand(omicron),
                 new HelpCommand(omicron));
         this.prefix = prefix;
         this.omicron = omicron;

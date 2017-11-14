@@ -35,6 +35,7 @@ public class FeedManager {
             JSONObject feed = feeds.getJSONObject(i);
 
             try {
+
                 loadFeed(feed.getString("prefix"),
                         FeedType.valueOf(feed.getString("type")),
                         omicron.getJDA().getTextChannelById(feed.getString("channel")),
@@ -115,6 +116,7 @@ public class FeedManager {
                 return;
         }
 
+        System.out.println("Adding feed " + prefix + " : " + type + " : " + content + " : " + channel.getId());
         feeds.add(new Feed(prefix, type, content, channel.getId(), feedHandler));
     }
 }

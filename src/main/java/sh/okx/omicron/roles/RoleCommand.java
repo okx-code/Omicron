@@ -4,8 +4,7 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Command;
-
-import java.util.List;
+import sh.okx.omicron.util.Util;
 
 public class RoleCommand extends Command {
     public RoleCommand(Omicron omicron) {
@@ -27,27 +26,12 @@ public class RoleCommand extends Command {
                     return;
                 }
 
-                Role role = null;
+                Role role = Util.getRole(message);
 
-                // first, try to get a mention
-                List<Role> mentionedRoles = message.getMentionedRoles();
-                if (mentionedRoles.size() > 0) {
-                    role = mentionedRoles.get(0);
-                } else if (parts.length > 1) {
-                    List<Role> rolesByName = guild.getRolesByName(parts[1], true);
-                    if (rolesByName.size() > 0) {
-                        role = rolesByName.get(0);
-                    } else {
-                        try {
-                            role = guild.getRoleById(parts[1]);
-                        } catch(Exception ex) {
-                            channel.sendMessage("Invalid role").queue();
-                            return;
-                        }
-                    }
-                }
-
-                if (role == null) {
+                if(!content.isEmpty() && role == null) {
+                    channel.sendMessage("Invalid role").queue();
+                    return;
+                } else if (role == null) {
                     omicron.getRoleManager().removeDefaultRole(guild.getId());
                     channel.sendMessage("Removed default role for this guild").queue();
                     return;

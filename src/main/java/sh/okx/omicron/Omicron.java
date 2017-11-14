@@ -6,6 +6,7 @@ import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import org.apache.commons.io.IOUtils;
 import sh.okx.omicron.command.CommandManager;
+import sh.okx.omicron.custom.CustomManager;
 import sh.okx.omicron.feed.FeedManager;
 import sh.okx.omicron.music.MusicManager;
 import sh.okx.omicron.roles.RoleManager;
@@ -32,6 +33,7 @@ public class Omicron {
     private MusicManager musicManager;
     private CommandManager commandManager;
     private RoleManager roleManager;
+    private CustomManager customManager;
 
     public Omicron(JDA jda) throws IOException {
         setupData();
@@ -42,6 +44,7 @@ public class Omicron {
         this.musicManager = new MusicManager(this);
         this.commandManager = new CommandManager("o/", this);
         this.roleManager = new RoleManager(this);
+        this.customManager = new CustomManager(this);
     }
 
     public JDA getJDA() {
@@ -50,6 +53,10 @@ public class Omicron {
 
     public Data getData() {
         return data;
+    }
+
+    public CustomManager getCustomManager() {
+        return customManager;
     }
 
     public FeedManager getFeedManager() {
@@ -78,7 +85,9 @@ public class Omicron {
             System.out.println("Shutting down and saving data.");
             try {
                 roleManager.save();
+                customManager.save();
                 feedManager.save();
+
                 data.save();
             } catch (IOException e) {
                 e.printStackTrace();

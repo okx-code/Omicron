@@ -4,3 +4,5 @@
 .gradle/
 .idea/
 build/
+/src/main/resources/token_main.txt
+/src/main/resources/token_test.txt
