@@ -12,15 +12,13 @@ import sh.okx.omicron.music.commands.*;
 import sh.okx.omicron.roles.RoleCommand;
 import sh.okx.omicron.trivia.TriviaCommand;
 
-import java.util.Set;
-
 public class CommandManager extends ListenerAdapter {
     private Omicron omicron;
-    private Set<Command> commands;
+    private Command[] commands;
     private String prefix;
 
     public CommandManager(String prefix, Omicron omicron) {
-        this.commands = Set.of(
+        this.commands = new Command[] {
                 new PingCommand(omicron),
                 new FeedCommand(omicron),
                 new TriviaCommand(omicron),
@@ -35,7 +33,8 @@ public class CommandManager extends ListenerAdapter {
                 new JoinCommand(omicron),
                 new PauseCommand(omicron),
                 new CustomCommand(omicron),
-                new HelpCommand(omicron));
+                new HelpCommand(omicron)
+        };
         this.prefix = prefix;
         this.omicron = omicron;
 

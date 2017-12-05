@@ -7,7 +7,6 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Command;
-import sh.okx.omicron.feed.rss.RssHandler;
 
 import java.net.MalformedURLException;
 
@@ -22,18 +21,18 @@ public class FeedCommand extends Command {
         if(parts.length < 2) {
             channel.sendMessage("Usage: **" +
                     omicron.getCommandManager().getPrefix() + name +
-                    "** <type=rss/youtube/reddit> <feed/user id/subreddit>").queue();
+                    "** <type=youtube/reddit> <feed/user id/subreddit>").queue();
             return;
         }
         FeedType type;
         try {
             type = FeedType.valueOf(parts[0].toUpperCase());
         } catch(IllegalArgumentException e) {
-            channel.sendMessage("Invalid type. Valid types are: RSS, YouTube, and Reddit.").queue();
+            channel.sendMessage("Invalid type. Valid types are: YouTube, and Reddit.").queue();
             return;
         }
 
-        if(!RssHandler.isValid(content) && type == FeedType.RSS) {
+        if(type == FeedType.RSS/*&& !RssHandler.isValid(content)*/) {
             channel.sendMessage("Invalid feed URL.").queue();
             return;
         }

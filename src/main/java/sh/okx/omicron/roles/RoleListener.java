@@ -7,7 +7,7 @@ import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import sh.okx.omicron.Omicron;
 
-public class RoleListener extends ListenerAdapter {
+public class    RoleListener extends ListenerAdapter {
     private Omicron omicron;
 
     public RoleListener(Omicron omicron) {

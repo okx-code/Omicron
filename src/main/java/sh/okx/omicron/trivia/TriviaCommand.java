@@ -138,14 +138,4 @@ public class TriviaCommand extends Command {
 
         channel.sendMessage(eb.build()).queue();
     }
-
-    private String englishName(int i) {
-        return Map.of(
-                0,"zero",
-                1, "one",
-                2, "two",
-                3, "three",
-                4, "four"
-        ).get(i);
-    }
 }

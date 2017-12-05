@@ -116,7 +116,8 @@ public class FeedManager {
                 return;
         }
 
-        System.out.println("Adding feed " + prefix + " : " + type + " : " + content + " : " + channel.getId());
+        System.out.println("Adding feed " + prefix + " : " + type + " : " + content);
+        System.out.println("Channel: " + channel.getId());
         feeds.add(new Feed(prefix, type, content, channel.getId(), feedHandler));
     }
 }

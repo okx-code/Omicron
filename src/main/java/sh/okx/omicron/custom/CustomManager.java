@@ -64,6 +64,14 @@ public class CustomManager {
             }
         }
 
+        for(CreatedCustomCommand createdCustomCommand : createdCustomCommands) {
+            if(createdCustomCommand.getCommand().equalsIgnoreCase(command) &&
+                    createdCustomCommand.getGuildId().equals(guildId) &&
+                    createdCustomCommand.getPermission().equals(new MemberPermission())) {
+                return createdCustomCommand;
+            }
+        }
+
         return null;
     }
 

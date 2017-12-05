@@ -13,7 +13,7 @@ public class CustomListener extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent e) {
-        if(e.getMember().getUser().isBot()) {
+        if(e.getMember() == null || e.getMember().getUser() == null || e.getMember().getUser().isBot()) {
             return;
         }
 

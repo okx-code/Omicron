@@ -9,38 +9,41 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Command;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class HelpCommand extends Command {
-    private Map<String, String> help = Map.of(
-            "feed", "This command allows you to add a feed to a channel.\n" +
-                    "You can add a feed from an RSS URL eg **o/feed rss <url>**,\n" +
-                    "a YouTube user - using their channel ID, not their username - eg **o/feed youtube UD3sfEfisf6N2Kq_YGfI2z**,\n" +
-                    "or posts from subreddits such as **o/feed reddit gifs** for posts from /r/gifs.",
-            "trivia", "Trivia questions. Run without any arguments for a random category,\n" +
-                    "Use **o/trivia categories** to list categories, and use\n" +
-                    "**o/trivia <category>** for a question in a specific category.",
-            "role", "Give a default role to people when they join\n" +
-                    "To set the role, use **o/role default <role id/name/mention>**.\n" +
-                    "To check what the default role currently is, use **o/role get**.",
-            "think", "Have a think **o/think**.",
-            /* Music */
-            "play", "Play a song. This only supports YouTube videos currently.\n" +
-                    "The bot will automatically join whichever voice channel you are in," +
-                    "or the first it has access to if you are not in a voice channel\n" +
-                    "Usage: **o/play <url / search videos>**.",
-            "loop", "Toggle looping. When enabled, this will repeat the next queued song forever.\n" +
-                    "Usage: **o/loop**.",
-            "join", "Join the channel of whoever sent the message.",
-            "remove", "Remove the song at the specified position in the queue.\n" +
-                    "You must either have manage channels permission or have added the song to the queue.\n" +
-                    "Usage: **o/remove <index>**",
-            "skip", "Skips the currently playing song. People with manage channels permission will instantly skip, " +
-                    "otherwise at least 50% of people in the bot's voice channel must vote to skip.\n" +
-                    "Usage: **o/skip**");
+    private Map<String, String> help = new HashMap<>();
 
     public HelpCommand(Omicron omicron) {
         super(omicron, "help");
+        // Misc
+        help.put("feed", "This command allows you to add a feed to a channel.\n" +
+                "You can add a feed from an RSS URL eg **o/feed rss <url>**,\n" +
+                "a YouTube user - using their channel ID, not their username - eg **o/feed youtube UD3sfEfisf6N2Kq_YGfI2z**,\n" +
+                "or posts from subreddits such as **o/feed reddit gifs** for posts from /r/gifs.");
+        help.put("trivia", "Trivia questions. Run without any arguments for a random category,\n" +
+                "Use **o/trivia categories** to list categories, and use\n" +
+                "**o/trivia <category>** for a question in a specific category.");
+        help.put("role", "Give a default role to people when they join\n" +
+                        "To set the role, use **o/role default <role id/name/mention>**.\n" +
+                        "To check what the default role currently is, use **o/role get**.");
+        help.put("think", "Have a think **o/think**.");
+
+        // Music
+        help.put("play", "Play a song. This only supports YouTube videos currently.\n" +
+                "The bot will automatically join whichever voice channel you are in, " +
+                "or the first it has access to if you are not in a voice channel\n" +
+                "Usage: **o/play <url / search videos>**.");
+        help.put("loop", "Toggle looping. When enabled, this will repeat the next queued song forever.\n" +
+                "Usage: **o/loop**.");
+        help.put("join", "Join the channel of whoever sent the message.");
+        help.put("remove", "Remove the song at the specified position in the queue.\n" +
+                "You must either have manage channels permission or have added the song to the queue.\n" +
+                "Usage: **o/remove <index>**");
+        help.put("skip", "Skips the currently playing song. People with manage channels permission will instantly skip, " +
+                "otherwise at least 50% of people in the bot's voice channel must vote to skip.\n" +
+                "Usage: **o/skip**");
     }
 
     @Override
