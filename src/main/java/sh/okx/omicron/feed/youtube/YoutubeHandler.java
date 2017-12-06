@@ -13,10 +13,11 @@ import sh.okx.omicron.feed.FeedHandler;
 import sh.okx.omicron.feed.FeedListener;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.*;
 
 public class YoutubeHandler implements FeedHandler {
-    private long lastChecked = System.currentTimeMillis();
+    private long lastChecked = Instant.now().toEpochMilli();
     private boolean cancelled;
     private TimerTask task;
 
