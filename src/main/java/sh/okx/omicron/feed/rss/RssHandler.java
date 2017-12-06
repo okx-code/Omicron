@@ -13,7 +13,7 @@ import java.net.URL;
 import java.util.*;
 
 public class RssHandler implements FeedHandler {
-    private long lastChecked = Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTimeInMillis();
+    private long lastChecked = System.currentTimeMillis();
     private boolean cancelled = false;
     private Set<AbstractRssListener> listeners = new HashSet<>();
     private TimerTask task;

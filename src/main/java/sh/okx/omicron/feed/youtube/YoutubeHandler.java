@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class YoutubeHandler implements FeedHandler {
-    private long lastChecked = Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTimeInMillis();
+    private long lastChecked = System.currentTimeMillis();
     private boolean cancelled;
     private TimerTask task;
 

@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RedditHandler implements FeedHandler {
-    private long lastChecked = Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTimeInMillis();
+    private long lastChecked = System.currentTimeMillis();
     private String subredditName;
     private TimerTask task;
     private boolean cancelled = false;
