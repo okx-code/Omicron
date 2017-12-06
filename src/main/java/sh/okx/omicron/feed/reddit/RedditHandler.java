@@ -87,7 +87,7 @@ public class RedditHandler implements FeedHandler {
                             });
                         }
                     }
-                    lastChecked = fetch.get(0).getCreated().getTime();
+                    lastChecked = fetch.get(0).getCreated().toInstant().getEpochSecond();
                     System.out.println(lastChecked);
                 } catch(Exception ex) {
                     cancelled = true;
