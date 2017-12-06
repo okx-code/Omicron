@@ -28,8 +28,6 @@ public class Omicron {
 
     public static void main(String[] args) throws IOException, LoginException,
             InterruptedException, RateLimitedException, URISyntaxException {
-        //System.setProperty("user.timezone", "UTC");
-
         JDA jda = new JDABuilder(AccountType.BOT)
                 .setToken(IOUtils.toString(new File("token.txt").toURI(), "UTF-8").trim())
                 .setGame(Game.of(Game.GameType.DEFAULT, "o/help"))
@@ -45,8 +43,7 @@ public class Omicron {
             shutdownChannel.delete();
         }
 
-        Omicron omicron = new Omicron(jda);
-        omicron.setupData();
+        new Omicron(jda);
     }
 
     private JDA jda;
@@ -59,8 +56,6 @@ public class Omicron {
     private CustomManager customManager;
 
     public Omicron(JDA jda) throws IOException {
-        setupData();
-
         this.sqlPassword = IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim();
 
         this.jda = jda;
@@ -90,10 +85,6 @@ public class Omicron {
         return jda;
     }
 
-    public Data getData() {
-        return data;
-    }
-
     public CustomManager getCustomManager() {
         return customManager;
     }
@@ -116,14 +107,5 @@ public class Omicron {
 
     public CommandManager getCommandManager() {
         return commandManager;
-    }
-
-    private void setupData() throws IOException {
-        data = new Data("data.json");
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Shutting down and saving data.");
-            customManager.save();
-            System.out.println("Success!");
-        }));
     }
 }

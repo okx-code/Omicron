@@ -23,42 +23,45 @@ public class FeedManager {
     public FeedManager(Omicron omicron) {
         this.omicron = omicron;
 
-        try {
-            // load the driver
-            Class.forName("com.mysql.jdbc.Driver");
+        new Thread(() -> {
+            try {
+                // load the driver
+                Class.forName("com.mysql.jdbc.Driver");
 
-            Connection connection = omicron.getConnection();
+                Connection connection = omicron.getConnection();
 
-            Statement table = connection.createStatement();
-            table.execute("CREATE TABLE IF NOT EXISTS feeds (prefix VARCHAR(255), " +
-                    "type VARCHAR(20), " +
-                    "channel BIGINT(20), " +
-                    "content VARCHAR(255) );");
+                Statement table = connection.createStatement();
+                table.execute("CREATE TABLE IF NOT EXISTS feeds (prefix VARCHAR(255), " +
+                        "type VARCHAR(20), " +
+                        "channel BIGINT(20), " +
+                        "content VARCHAR(255) );");
 
-            table.close();
+                table.close();
 
-            Statement feeds = connection.createStatement();
-            ResultSet rs = feeds.executeQuery("SELECT * FROM feeds;");
+                Statement feeds = connection.createStatement();
+                ResultSet rs = feeds.executeQuery("SELECT * FROM feeds;");
 
-            while(rs.next()) {
-                TextChannel channel = omicron.getJDA().getTextChannelById(rs.getString("channel"));
-                if(channel == null) {
-                    continue;
+                while(rs.next()) {
+                    TextChannel channel = omicron.getJDA().getTextChannelById(rs.getString("channel"));
+                    if(channel == null) {
+                        continue;
+                    }
+                    try {
+                        loadFeed(rs.getString("prefix"), FeedType.valueOf(rs.getString("type")),
+                                channel, rs.getString("content"));
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
                 }
-                try {
-                    loadFeed(rs.getString("prefix"), FeedType.valueOf(rs.getString("type")),
-                            channel, rs.getString("content"));
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
+
+                feeds.close();
+                connection.close();
+
+                System.out.println("Loaded feeds.");
+            } catch (SQLException | ClassNotFoundException e) {
+                e.printStackTrace();
             }
-
-            feeds.close();
-
-            connection.close();
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+        }).start();
     }
 
     public void removeFeed(String channel, String content) {

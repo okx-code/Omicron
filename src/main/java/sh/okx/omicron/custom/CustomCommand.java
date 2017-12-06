@@ -26,50 +26,36 @@ public class CustomCommand extends Command {
 
         MemberPermission permission;
 
-        if(parts.length == 3) {
-
-            Role role;
-            try {
-                role = message.getMentionedRoles().get(0);
-            } catch(IndexOutOfBoundsException ex) {
-                role = Util.getRole(guild, parts[0]);
-            }
-            Member customMember;
-            try {
-                customMember = guild.getMember(message.getMentionedUsers().get(0));
-            } catch(Exception ex) {
-                customMember = Util.getMember(guild, parts[0]);
-            }
+        if(parts[0].equalsIgnoreCase("everyone") || parts[0].equalsIgnoreCase("all")) {
+            permission = new MemberPermission();
+        } else {
+            Role role = Util.getRole(message, parts[0]);
+            Member customMember = Util.getMember(message, parts[0]);
 
             if(role == null && customMember == null) {
                 channel.sendMessage("Invalid role / member").queue();
                 return;
             }
 
-            if(customMember != null) {
-                permission = new MemberPermission(customMember.getUser());
-            } else {
-                permission = new MemberPermission(role);
-            }
-        } else {
-            permission = new MemberPermission();
+            permission = customMember == null ? new MemberPermission(role) : new MemberPermission(customMember.getUser());
         }
+        String command = parts[1];
 
-        String response = parts[parts.length - 1];
-        String command = parts[parts.length - 2];
-
-        CreatedCustomCommand customCommand = new CreatedCustomCommand(guild.getId(), permission, command, response);
-
-        if(omicron.getCustomManager().hasCommand(customCommand)) {
-            omicron.getCustomManager().removeCommand(customCommand);
-
-            channel.sendMessage("Removed command " + command + " when said by " + permission.getReadableAccess())
+        CreatedCustomCommand existing = omicron.getCustomManager().getCommand(guild.getIdLong(), member, command);
+        if(existing != null) {
+            omicron.getCustomManager().removeCommand(guild.getIdLong(), permission, command);
+            channel.sendMessage("Removed command " + existing.getCommand() + " when said by " + permission.getReadableAccess())
                     .queue();
-        } else {
-            omicron.getCustomManager().addCommand(new CreatedCustomCommand(guild.getId(), permission, command, response));
-
-            channel.sendMessage("Added response '" + response + "' when " + command +
-                    " is said by " + permission.getReadableAccess()).queue();
+            return;
+        } else if(parts.length == 2) {
+            channel.sendMessage("Either could not find command to remove or the response is missing.").queue();
+            return;
         }
+
+        String response = parts[2];
+        omicron.getCustomManager().addCommand(new CreatedCustomCommand(guild.getIdLong(), permission, command, response));
+
+        channel.sendMessage("Added response '" + response + "' when " + command +
+                " is said by " + permission.getReadableAccess()).queue();
     }
 }

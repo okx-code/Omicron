@@ -18,7 +18,7 @@ public class CustomListener extends ListenerAdapter {
         }
 
         CreatedCustomCommand createdCustomCommand = omicron.getCustomManager()
-                .getCommand(e.getMessage().getRawContent(), e.getGuild().getId(), e.getMember());
+                .getCommand(e.getGuild().getIdLong(), e.getMember(), e.getMessage().getRawContent());
         if(createdCustomCommand == null) {
             return;
         }

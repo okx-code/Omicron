@@ -23,7 +23,7 @@ public class Util {
                 .replaceAll("</?[a-z]+>", "");
     }
 
-    public static Role getRole(Guild guild, String message) {
+    private static Role getRole(Guild guild, String message) {
         List<Role> rolesByName = guild.getRolesByName(message, true);
         if (rolesByName.size() > 0) {
             return rolesByName.get(0);
@@ -36,7 +36,14 @@ public class Util {
         }
     }
 
-    public static Role getRole(Message message) {
+    /**
+     * Try to get a role from a message by its mentions,
+     * and on failure try and get the role by name
+     * @param message The message that may contain a mentioned role
+     * @param fallback The string potentially containing a role's name
+     * @return The matched role, or null if not found
+     */
+    public static Role getRole(Message message, String fallback) {
         Role role = null;
 
         // first, try to get a mention
@@ -44,13 +51,13 @@ public class Util {
         if (mentionedRoles.size() > 0) {
             role = mentionedRoles.get(0);
         } else if (!message.getRawContent().isEmpty()) {
-            return getRole(message.getGuild(), message.getRawContent());
+            return getRole(message.getGuild(), fallback);
         }
 
         return role;
     }
 
-    public static Member getMember(Guild guild, String message) {
+    private static Member getMember(Guild guild, String message) {
         List<Member> membersByName = guild.getMembersByName(message, true);
         if (membersByName.size() > 0) {
             return membersByName.get(0);
@@ -73,13 +80,20 @@ public class Util {
         return null;
     }
 
-    public static Member getMember(Message message) {
+    /**
+     * Try to get a member from a message by its mentions,
+     * and on failure try and get the member by name
+     * @param message The message that may contain a mentioned user
+     * @param fallback The string potentially containing a user name or nickname
+     * @return The matched member, or null if not found
+     */
+    public static Member getMember(Message message, String fallback) {
         // first, try to get a mention
         List<User> mentionedUsers = message.getMentionedUsers();
         if (mentionedUsers.size() > 0) {
             return message.getGuild().getMember(mentionedUsers.get(0));
         } else if (!message.getRawContent().isEmpty()) {
-            return getMember(message.getGuild(), message.getRawContent());
+            return getMember(message.getGuild(), fallback);
         }
         return null;
     }

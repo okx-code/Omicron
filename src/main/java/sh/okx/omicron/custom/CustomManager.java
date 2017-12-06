@@ -1,81 +1,106 @@
 package sh.okx.omicron.custom;
 
 import net.dv8tion.jda.core.entities.Member;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import sh.okx.omicron.Omicron;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.*;
 
 public class CustomManager {
     private Omicron omicron;
-    private List<CreatedCustomCommand> createdCustomCommands = new ArrayList<>();
-
     public CustomManager(Omicron omicron) {
         this.omicron = omicron;
 
         omicron.getJDA().addEventListener(new CustomListener(omicron));
 
-        load();
-    }
+        new Thread(() -> {
+            try {
+                Connection connection = omicron.getConnection();
 
-    public void load() {
-        JSONArray existing = omicron.getData().getJSONArray("commands");
-        for(int i = 0; i < existing.length(); i++) {
-            JSONObject command = existing.getJSONObject(i);
+                Statement statement = connection.createStatement();
 
-            createdCustomCommands.add(new CreatedCustomCommand(command.getString("guild"),
-                    MemberPermission.fromString(omicron.getJDA(), command.getString("permission")),
-                    command.getString("command"),
-                    command.getString("response")));
-        }
-    }
+                statement.execute("CREATE TABLE IF NOT EXISTS commands (guild BIGINT(20), permission BIGINT(20), " +
+                        "command VARCHAR(255), response TEXT );");
 
-    public void save() {
-        JSONArray commands = new JSONArray();
-        for(CreatedCustomCommand command : createdCustomCommands) {
-            JSONObject jsonCommand = new JSONObject();
-            jsonCommand.put("guild", command.getGuildId());
-            jsonCommand.put("permission", command.getPermission().toString());
-            jsonCommand.put("command", command.getCommand());
-            jsonCommand.put("response", command.getResponse());
+                statement.close();
+                connection.close();
 
-            commands.put(jsonCommand);
-        }
-
-        omicron.getData().set("commands", commands);
+                System.out.println("Loaded custom commands.");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     public void addCommand(CreatedCustomCommand command) {
-        createdCustomCommands.add(command);
+        new Thread(() -> {
+            try {
+                Connection connection = omicron.getConnection();
+
+                PreparedStatement statement = connection.prepareStatement("REPLACE INTO commands " +
+                        "(guild, permission, command, response) VALUES (?, ?, ?, ?)");
+                statement.setLong(1, command.getGuildId());
+                statement.setLong(2, command.getPermission().toLong());
+                statement.setString(3, command.getCommand());
+                statement.setString(4, command.getResponse());
+
+                statement.execute();
+
+                statement.close();
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
-    public void removeCommand(CreatedCustomCommand command) {
-        createdCustomCommands.remove(command);
+    public void removeCommand(long guild, MemberPermission permission, String command) {
+        new Thread(() -> {
+            try {
+                Connection connection = omicron.getConnection();
+
+                PreparedStatement statement = connection.prepareStatement("DELETE FROM commands " +
+                        "WHERE guild=? AND permission=? AND command=?");
+                statement.setLong(1, guild);
+                statement.setLong(2, permission.toLong());
+                statement.setString(3, command);
+
+                statement.execute();
+
+                statement.close();
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
-    public CreatedCustomCommand getCommand(String command, String guildId, Member member) {
-        for(CreatedCustomCommand createdCustomCommand : createdCustomCommands) {
-            if(createdCustomCommand.getCommand().equalsIgnoreCase(command) &&
-                    createdCustomCommand.getGuildId().equals(guildId) &&
-                    createdCustomCommand.getPermission().hasPermission(member)) {
-                return createdCustomCommand;
-            }
-        }
+    public CreatedCustomCommand getCommand(long guild, Member member, String command) {
+        try {
+            Connection connection = omicron.getConnection();
 
-        for(CreatedCustomCommand createdCustomCommand : createdCustomCommands) {
-            if(createdCustomCommand.getCommand().equalsIgnoreCase(command) &&
-                    createdCustomCommand.getGuildId().equals(guildId) &&
-                    createdCustomCommand.getPermission().equals(new MemberPermission())) {
-                return createdCustomCommand;
-            }
-        }
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM commands " +
+                    "WHERE guild=? AND command=?");
+            statement.setLong(1, guild);
+            statement.setString(2, command);
 
+            ResultSet rs = statement.executeQuery();
+            while(rs.next()) {
+                MemberPermission permission = MemberPermission.fromLong(omicron.getJDA(), rs.getLong("permission"));
+                if(!permission.hasPermission(member)) {
+                    continue;
+                }
+
+                return new CreatedCustomCommand(rs.getLong("guild"),
+                        permission,
+                        rs.getString("command"),
+                        rs.getString("response"));
+            }
+
+            statement.close();
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
-    }
-
-    public boolean hasCommand(CreatedCustomCommand command) {
-        return createdCustomCommands.contains(command);
     }
 }

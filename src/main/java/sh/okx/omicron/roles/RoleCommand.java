@@ -26,14 +26,15 @@ public class RoleCommand extends Command {
                     return;
                 }
 
-                Role role = Util.getRole(message);
-
-                if(!content.isEmpty() && role == null) {
-                    channel.sendMessage("Invalid role").queue();
-                    return;
-                } else if (role == null) {
+                if(parts.length < 2) {
                     omicron.getRoleManager().removeDefaultRole(guild.getIdLong());
                     channel.sendMessage("Removed default role for this guild").queue();
+                    return;
+                }
+
+                Role role = Util.getRole(message, parts[1]);
+                if (role == null) {
+                    channel.sendMessage("Invalid role").queue();
                     return;
                 }
 
@@ -80,8 +81,8 @@ public class RoleCommand extends Command {
         }
 
         String fullName = omicron.getCommandManager().getPrefix() + name;
-        channel.sendMessage("Set the role to give by default to everyone when they join this guild " +
-                "(providing no role will remove the automatically given role): **" + fullName + " default <role>**.\n" +
+        channel.sendMessage(
+                "Set the role to give by default to everyone when they join this guild **" + fullName + " default <role>**.\n" +
                 "Get the role automatically given to people joining this guild: **" + fullName + " get**.")
                 .queue();
     }

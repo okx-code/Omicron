@@ -3,12 +3,9 @@ package sh.okx.omicron.roles;
 import sh.okx.omicron.Omicron;
 
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
 
 public class RoleManager {
     private Omicron omicron;
-    private Map<String, String> roles = new HashMap<>();
 
     public RoleManager(Omicron omicron) {
         this.omicron = omicron;
@@ -24,6 +21,8 @@ public class RoleManager {
 
                 table.close();
                 connection.close();
+
+                System.out.println("Loaded default roles.");
             } catch (SQLException e) {
                 e.printStackTrace();
             }

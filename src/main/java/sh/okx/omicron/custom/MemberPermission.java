@@ -28,7 +28,7 @@ public class MemberPermission {
         }
 
         MemberPermission permission = (MemberPermission) o;
-        return permission.toString().equals(this.toString());
+        return permission.toLong() == this.toLong();
     }
 
     public String getReadableAccess() {
@@ -51,19 +51,24 @@ public class MemberPermission {
         return true;
     }
 
+    @Override
     public String toString() {
         return user != null ? user.getId() : role != null ? role.getId() : "";
     }
 
-    public static MemberPermission fromString(JDA jda, String string) {
-        if(string.isEmpty()) {
+    public long toLong() {
+        return user != null ? user.getIdLong() : role != null ? role.getIdLong() : 0;
+    }
+
+    public static MemberPermission fromLong(JDA jda, long value) {
+        if(value < 0) {
             return new MemberPermission();
         }
 
-        User user = jda.getUserById(string);
+        User user = jda.getUserById(value);
         if(user != null) {
             return new MemberPermission(user);
         }
-        return new MemberPermission(jda.getRoleById(string));
+        return new MemberPermission(jda.getRoleById(value));
     }
 }
