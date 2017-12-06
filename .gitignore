@@ -6,3 +6,4 @@
 build/
 /src/main/resources/token_test.txt
 /token.txt
+/db_password.txt

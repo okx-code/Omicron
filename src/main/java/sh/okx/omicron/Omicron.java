@@ -19,8 +19,13 @@ import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class Omicron {
+    private final String sqlPassword;
+
     public static void main(String[] args) throws IOException, LoginException,
             InterruptedException, RateLimitedException, URISyntaxException {
         JDA jda = new JDABuilder(AccountType.BOT)
@@ -54,6 +59,8 @@ public class Omicron {
     public Omicron(JDA jda) throws IOException {
         setupData();
 
+        this.sqlPassword = IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim();
+
         this.jda = jda;
         this.feedManager = new FeedManager(this);
         this.triviaManager = new TriviaManager(this);
@@ -63,11 +70,12 @@ public class Omicron {
         this.customManager = new CustomManager(this);
     }
 
-    public String getSqlPassword() {
+    public Connection getConnection() {
         try {
-            return IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim();
-        } catch(IOException ex) {
-            ex.printStackTrace();
+            return DriverManager.getConnection("jdbc:mysql://localhost:3306/omicron",
+                    "root", sqlPassword);
+        } catch (SQLException e) {
+            e.printStackTrace();
             return null;
         }
     }

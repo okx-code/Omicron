@@ -1,7 +1,6 @@
 package sh.okx.omicron.feed;
 
 import net.dv8tion.jda.core.entities.TextChannel;
-import org.apache.commons.io.IOUtils;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.feed.reddit.RedditHandler;
 import sh.okx.omicron.feed.reddit.RedditListener;
@@ -10,33 +9,26 @@ import sh.okx.omicron.feed.rss.RssListener;
 import sh.okx.omicron.feed.youtube.YoutubeHandler;
 import sh.okx.omicron.feed.youtube.YoutubeListener;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.*;
-import java.util.HashSet;
-import java.util.Set;
 
 public class FeedManager {
     private Omicron omicron;
-    private String password;
 
     public FeedManager(Omicron omicron) {
         this.omicron = omicron;
-        this.password = omicron.getSqlPassword();
 
         try {
             // load the driver
             Class.forName("com.mysql.jdbc.Driver");
 
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/omicron",
-                    "root", password);
+            Connection connection = omicron.getConnection();
 
             Statement statement = connection.createStatement();
             statement.execute("CREATE TABLE IF NOT EXISTS feeds (prefix VARCHAR(255), " +
-                    "type ENUM(RSS, YOUTUBE, REDDIT), " +
-                    "channel INT(20), " +
+                    "type VARCHAR(20), " +
+                    "channel BIGINT(20), " +
                     "content VARCHAR(255) );");
 
             // close connections
@@ -45,92 +37,58 @@ public class FeedManager {
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-        load();
     }
 
-    private Set<Feed> feeds = new HashSet<>();
-
-    public void load() {
+    public void removeFeed(String channel, String content) {
         new Thread(() -> {
             try {
-                Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/omicron",
-                        "root", password);
+                Connection connection = omicron.getConnection();
 
-                Statement statement = connection.createStatement();
-                statement.execute("SELECT * FROM feeds;");
+                PreparedStatement statement = connection.prepareStatement("DELETE FROM feeds " +
+                        "WHERE channel=? AND content=?;");
+                statement.setString(1, channel);
+                statement.setString(2, content);
 
-                ResultSet rs = statement.getResultSet();
-                while (rs.next()) {
-                    long channelId = rs.getLong("channel");
-                    TextChannel channel = omicron.getJDA().getTextChannelById(channelId);
-                    if (channel == null) {
-                        // invalid entry
-                        // TODO: Delete invalid entry
-                        return;
-                    }
-
-                    loadFeed(rs.getString("prefix"),
-                            FeedType.valueOf(rs.getString("type")),
-                            channel,
-                            rs.getString("content"));
-                }
+                statement.execute();
 
                 // close connections
-                rs.close();
                 statement.close();
                 connection.close();
-            } catch (SQLException | MalformedURLException e) {
-                e.printStackTrace();
+            } catch(SQLException ex) {
+                ex.printStackTrace();
             }
         }).start();
     }
 
-    public void removeFeed(String channel, String content) {
-        feeds.removeIf(feed -> {
-            boolean remove = feed.getLocation().equalsIgnoreCase(content) &&
-                    feed.getChannel().equals(channel);
-            if(remove) {
-                new Thread(() -> {
-                    try {
-                        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/omicron",
-                                "root", password);
+    public boolean hasFeed(String channelId, String content) {
+        try {
+            Connection connection = omicron.getConnection();
 
-                        PreparedStatement statement = connection.prepareStatement("DELETE FROM feeds " +
-                                "WHERE channel=? AND content=?;");
-                        statement.setString(1, channel);
-                        statement.setString(2, content);
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM feeds WHERE channel=? AND content=?;");
+            statement.setString(1, channelId);
+            statement.setString(2, content);
 
-                        statement.execute();
+            statement.execute();
 
-                        // close connections
-                        statement.close();
-                        connection.close();
-                    } catch(SQLException ex) {
-                        ex.printStackTrace();
-                    }
-                }).start();
+            ResultSet rs = statement.getResultSet();
+            boolean yes = rs.next();
 
-                feed.getHandler().cancel();
-            }
-            return remove;
-        });
-    }
+            // close connections
+            rs.close();
+            statement.close();
+            connection.close();
 
-    public boolean hasFeed(String channel, String location) {
-        for(Feed feed : feeds) {
-            if(feed.getLocation().equalsIgnoreCase(location) && feed.getChannel().equals(channel)) {
-                return true;
-            }
+            return yes;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
-
-        return false;
     }
 
     public void addFeed(String prefix, FeedType type, TextChannel channel, String content) throws MalformedURLException {
         new Thread(() -> {
             try {
-                Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/omicron",
-                        "root", password);
+                Connection connection = omicron.getConnection();
 
                 PreparedStatement statement = connection.prepareStatement("REPLACE INTO feeds (prefix, type, channel, content) " +
                         "VALUES (?, ?, ?, ?);");
@@ -176,8 +134,7 @@ public class FeedManager {
         handler.addListener(listener);
         handler.start();
 
-        System.out.println("Adding feed " + prefix + " : " + type + " : " + content);
+        System.out.println("Registered feed " + prefix + " : " + type + " : " + content);
         System.out.println("Channel: " + channel.getId());
-        feeds.add(new Feed(prefix, type, content, channel.getId(), handler));
     }
 }
