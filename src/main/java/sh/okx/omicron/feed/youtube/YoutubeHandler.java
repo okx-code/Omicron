@@ -10,6 +10,8 @@ import com.google.api.services.youtube.model.SearchResultSnippet;
 import org.apache.commons.io.IOUtils;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.feed.FeedHandler;
+import sh.okx.omicron.feed.FeedListener;
+import sh.okx.omicron.feed.rss.AbstractRssListener;
 
 import java.io.IOException;
 import java.util.*;
@@ -21,8 +23,8 @@ public class YoutubeHandler implements FeedHandler {
 
     private Set<AbstractYoutubeListener> listeners = new HashSet<>();
 
-    public void addListener(AbstractYoutubeListener listener) {
-        listeners.add(listener);
+    public void addListener(FeedListener listener) {
+        listeners.add((AbstractYoutubeListener) listener);
     }
 
     public YoutubeHandler(String id) {

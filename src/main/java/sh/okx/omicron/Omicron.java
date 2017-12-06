@@ -52,6 +52,10 @@ public class Omicron {
         this.customManager = new CustomManager(this);
     }
 
+    /**
+     * This is the recommended way to get a JDA object
+     * @return A copy of the JDA object
+     */
     public JDA getJDA() {
         return jda;
     }
@@ -88,15 +92,9 @@ public class Omicron {
         data = new Data("data.json");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Shutting down and saving data.");
-            try {
-                roleManager.save();
-                customManager.save();
-                feedManager.save();
-
-                data.save();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            roleManager.save();
+            customManager.save();
+            System.out.println("Success!");
         }));
     }
 }

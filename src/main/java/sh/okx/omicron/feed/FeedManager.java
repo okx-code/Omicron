@@ -1,67 +1,92 @@
 package sh.okx.omicron.feed;
 
 import net.dv8tion.jda.core.entities.TextChannel;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.apache.commons.io.IOUtils;
 import sh.okx.omicron.Omicron;
-import sh.okx.omicron.feed.reddit.AbstractRedditListener;
 import sh.okx.omicron.feed.reddit.RedditHandler;
 import sh.okx.omicron.feed.reddit.RedditListener;
-import sh.okx.omicron.feed.rss.AbstractRssListener;
 import sh.okx.omicron.feed.rss.RssHandler;
 import sh.okx.omicron.feed.rss.RssListener;
-import sh.okx.omicron.feed.youtube.AbstractYoutubeListener;
 import sh.okx.omicron.feed.youtube.YoutubeHandler;
 import sh.okx.omicron.feed.youtube.YoutubeListener;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.*;
 import java.util.HashSet;
 import java.util.Set;
 
 public class FeedManager {
     private Omicron omicron;
+    private String password;
 
     public FeedManager(Omicron omicron) {
         this.omicron = omicron;
+        try {
+            this.password = IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            // load the driver
+            Class.forName("com.mysql.jdbc.Driver");
+
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/omicron",
+                    "root", password);
+
+            Statement statement = connection.createStatement();
+            statement.execute("CREATE TABLE IF NOT EXISTS feeds (prefix VARCHAR(255), " +
+                    "type ENUM(RSS, YOUTUBE, REDDIT), " +
+                    "channel INT(20), " +
+                    "content VARCHAR(255) );");
+
+            // close connections
+            statement.close();
+            connection.close();
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         load();
     }
 
     private Set<Feed> feeds = new HashSet<>();
 
     public void load() {
-        JSONArray feeds = omicron.getData().getJSONArray("feeds");
-        for(int i = 0; i < feeds.length(); i++) {
-            JSONObject feed = feeds.getJSONObject(i);
-
+        new Thread(() -> {
             try {
+                Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/omicron",
+                        "root", password);
 
-                loadFeed(feed.getString("prefix"),
-                        FeedType.valueOf(feed.getString("type")),
-                        omicron.getJDA().getTextChannelById(feed.getString("channel")),
-                        feed.getString("url"));
-            } catch (MalformedURLException e) {
+                Statement statement = connection.createStatement();
+                statement.execute("SELECT * FROM feeds;");
+
+                ResultSet rs = statement.getResultSet();
+                while (rs.next()) {
+                    long channelId = rs.getLong("channel");
+                    TextChannel channel = omicron.getJDA().getTextChannelById(channelId);
+                    if (channel == null) {
+                        // invalid entry
+                        // TODO: Delete invalid entry
+                        return;
+                    }
+
+                    loadFeed(rs.getString("prefix"),
+                            FeedType.valueOf(rs.getString("type")),
+                            channel,
+                            rs.getString("content"));
+                }
+
+                // close connections
+                rs.close();
+                statement.close();
+                connection.close();
+            } catch (SQLException | MalformedURLException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    public void save() {
-        JSONArray feedsJson = new JSONArray();
-        for(Feed feed : feeds) {
-            if(feed.getHandler().isCancelled()) {
-                continue;
-            }
-
-            JSONObject feedJson = new JSONObject();
-            feedJson.put("type", feed.getType().name());
-            feedJson.put("url", feed.getLocation());
-            feedJson.put("channel", feed.getChannel());
-            feedJson.put("prefix", feed.getPrefix());
-            feedsJson.put(feedJson);
-        }
-
-        omicron.getData().set("feeds", feedsJson);
+        }).start();
     }
 
     public void removeFeed(String channel, String content) {
@@ -69,6 +94,26 @@ public class FeedManager {
             boolean remove = feed.getLocation().equalsIgnoreCase(content) &&
                     feed.getChannel().equals(channel);
             if(remove) {
+                new Thread(() -> {
+                    try {
+                        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/omicron",
+                                "root", password);
+
+                        PreparedStatement statement = connection.prepareStatement("DELETE FROM feeds " +
+                                "WHERE channel=? AND content=?;");
+                        statement.setString(1, channel);
+                        statement.setString(2, content);
+
+                        statement.execute();
+
+                        // close connections
+                        statement.close();
+                        connection.close();
+                    } catch(SQLException ex) {
+                        ex.printStackTrace();
+                    }
+                }).start();
+
                 feed.getHandler().cancel();
             }
             return remove;
@@ -85,39 +130,58 @@ public class FeedManager {
         return false;
     }
 
+    public void addFeed(String prefix, FeedType type, TextChannel channel, String content) throws MalformedURLException {
+        new Thread(() -> {
+            try {
+                Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/omicron",
+                        "root", password);
+
+                PreparedStatement statement = connection.prepareStatement("REPLACE INTO feeds (prefix, type, channel, content) " +
+                        "VALUES (?, ?, ?, ?);");
+                statement.setString(1, prefix);
+                statement.setString(2, type.name());
+                statement.setLong(3, channel.getIdLong());
+                statement.setString(4, content);
+
+                statement.execute();
+
+                // close connections
+                statement.close();
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }).start();
+
+        loadFeed(prefix, type, channel, content);
+    }
+
     public void loadFeed(String prefix, FeedType type, TextChannel channel, String content) throws MalformedURLException {
         prefix = prefix.replace("<everyone>", "@everyone");
 
-        FeedHandler feedHandler;
-
+        FeedHandler handler;
+        FeedListener listener;
         switch(type) {
             case RSS:
-                RssHandler rssHandler = new RssHandler(new URL(content));
-                AbstractRssListener rssListener = new RssListener(prefix, channel);
-                feedHandler = rssHandler;
-                rssHandler.addListener(rssListener);
-                rssHandler.start();
+                handler = new RssHandler(new URL(content));
+                listener = new RssListener(prefix, channel);
                 break;
             case YOUTUBE:
-                YoutubeHandler youtubeHandler = new YoutubeHandler(content);
-                AbstractYoutubeListener youtubeListener = new YoutubeListener(prefix, channel);
-                feedHandler = youtubeHandler;
-                youtubeHandler.addListener(youtubeListener);
-                youtubeHandler.start();
+                handler = new YoutubeHandler(content);
+                listener = new YoutubeListener(prefix, channel);
                 break;
             case REDDIT:
-                RedditHandler redditHandler = new RedditHandler(content);
-                AbstractRedditListener redditListener = new RedditListener(prefix, channel);
-                feedHandler = redditHandler;
-                redditHandler.addListener(redditListener);
-                redditHandler.start();
+                handler = new RedditHandler(content);
+                listener = new RedditListener(prefix, channel);
                 break;
             default:
                 return;
         }
+        handler.addListener(listener);
+        handler.start();
 
         System.out.println("Adding feed " + prefix + " : " + type + " : " + content);
         System.out.println("Channel: " + channel.getId());
-        feeds.add(new Feed(prefix, type, content, channel.getId(), feedHandler));
+        feeds.add(new Feed(prefix, type, content, channel.getId(), handler));
     }
 }

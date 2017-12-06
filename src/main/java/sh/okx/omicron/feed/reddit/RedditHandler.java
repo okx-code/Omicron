@@ -12,6 +12,8 @@ import net.dean.jraw.models.Submission;
 import org.apache.commons.io.IOUtils;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.feed.FeedHandler;
+import sh.okx.omicron.feed.FeedListener;
+import sh.okx.omicron.feed.rss.AbstractRssListener;
 
 import java.io.IOException;
 import java.util.*;
@@ -24,8 +26,8 @@ public class RedditHandler implements FeedHandler {
     private boolean cancelled = false;
     private Set<AbstractRedditListener> listeners = new HashSet<>();
 
-    public void addListener(AbstractRedditListener listener) {
-        listeners.add(listener);
+    public void addListener(FeedListener listener) {
+        listeners.add((AbstractRedditListener) listener);
     }
 
     public RedditHandler(String subredditName) {

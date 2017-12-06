@@ -21,7 +21,7 @@ public class QueueCommand extends Command {
     }
 
     @Override
-    public void run(Omicron omicron, Guild guild, TextChannel channel, Member member, Message message, String content) {
+    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
         GuildMusicManager musicManager = omicron.getMusicManager().getGuildAudioPlayer(guild);
 
         EmbedBuilder eb = new EmbedBuilder();

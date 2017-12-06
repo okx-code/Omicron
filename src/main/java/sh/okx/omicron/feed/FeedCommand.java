@@ -16,7 +16,7 @@ public class FeedCommand extends Command {
     }
 
     @Override
-    public void run(Omicron omicron, Guild guild, TextChannel channel, Member member, Message message, String content) {
+    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
         String[] parts = content.split(" ", 3);
         if(parts.length < 2) {
             channel.sendMessage("Usage: **" +
@@ -39,7 +39,7 @@ public class FeedCommand extends Command {
 
         if(!omicron.getFeedManager().hasFeed(channel.getId(), parts[1])) {
             try {
-                omicron.getFeedManager().loadFeed(parts.length < 3 ? "" : parts[2], type, channel, parts[1]);
+                omicron.getFeedManager().addFeed(parts.length < 3 ? "" : parts[2], type, channel, parts[1]);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
                 channel.sendMessage("An error occured loading the feed.").queue();

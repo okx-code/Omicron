@@ -7,17 +7,21 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Command;
 
-import java.time.Instant;
+import java.io.IOException;
 
-public class PingCommand extends Command {
-    public PingCommand(Omicron omicron) {
-        super(omicron, "ping");
+public class RestartCommand extends Command {
+    public RestartCommand(Omicron omicron) {
+        super(omicron, "restart");
     }
 
     @Override
     public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
-        channel.sendMessage("WebSocket Ping: " + omicron.getJDA().getPing() + "ms | " +
-                "Message Ping: " + (Instant.now().toEpochMilli()-message.getCreationTime().toInstant().toEpochMilli()) +
-                "ms.").queue();
+        try {
+            Runtime.getRuntime().exec("./start.sh &> output.log &");
+            omicron.getJDA().shutdown();
+            System.exit(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

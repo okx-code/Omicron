@@ -20,7 +20,7 @@ public class SkipCommand extends Command {
     }
 
     @Override
-    public void run(Omicron omicron, Guild guild, TextChannel channel, Member member, Message message, String content) {
+    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
         if(member.hasPermission(Permission.MANAGE_CHANNEL)) {
             AudioTrack playing = omicron.getMusicManager().getPlaying(guild);
             if(playing == null) {

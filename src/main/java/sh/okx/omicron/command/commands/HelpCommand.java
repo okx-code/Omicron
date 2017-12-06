@@ -47,7 +47,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public void run(Omicron omicron, Guild guild, TextChannel channel, Member member, Message message, String content) {
+    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
         String prefix = omicron.getCommandManager().getPrefix();
         content = content.replaceFirst(prefix, "");
 

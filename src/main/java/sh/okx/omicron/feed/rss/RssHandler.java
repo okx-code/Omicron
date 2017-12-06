@@ -6,6 +6,7 @@ import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedInput;
 import com.sun.syndication.io.XmlReader;
 import sh.okx.omicron.feed.FeedHandler;
+import sh.okx.omicron.feed.FeedListener;
 
 import java.io.IOException;
 import java.net.URL;
@@ -17,8 +18,8 @@ public class RssHandler implements FeedHandler {
     private Set<AbstractRssListener> listeners = new HashSet<>();
     private TimerTask task;
 
-    public void addListener(AbstractRssListener listener) {
-        listeners.add(listener);
+    public void addListener(FeedListener listener) {
+        listeners.add((AbstractRssListener) listener);
     }
 
     public RssHandler(URL feedUrl) {

@@ -5,6 +5,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.commands.HelpCommand;
 import sh.okx.omicron.command.commands.PingCommand;
+import sh.okx.omicron.command.commands.RestartCommand;
 import sh.okx.omicron.command.commands.ThinkCommand;
 import sh.okx.omicron.custom.CustomCommand;
 import sh.okx.omicron.feed.FeedCommand;
@@ -33,7 +34,8 @@ public class CommandManager extends ListenerAdapter {
                 new JoinCommand(omicron),
                 new PauseCommand(omicron),
                 new CustomCommand(omicron),
-                new HelpCommand(omicron)
+                new HelpCommand(omicron),
+                new RestartCommand(omicron),
         };
         this.prefix = prefix;
         this.omicron = omicron;
@@ -61,7 +63,7 @@ public class CommandManager extends ListenerAdapter {
                 continue;
             }
 
-            command.run(omicron, e.getGuild(), e.getTextChannel(), e.getMember(), e.getMessage(),
+            command.run(e.getGuild(), e.getTextChannel(), e.getMember(), e.getMessage(),
                     parts.length > 1 ? parts[1] : "");
             return;
         }

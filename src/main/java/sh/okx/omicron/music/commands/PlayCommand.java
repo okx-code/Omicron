@@ -13,7 +13,7 @@ public class PlayCommand extends Command {
     }
 
     @Override
-    public void run(Omicron omicron, Guild guild, TextChannel channel, Member member, Message message, String content) {
+    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
         omicron.getMusicManager().loadAndPlay(member, channel, content);
     }
 }

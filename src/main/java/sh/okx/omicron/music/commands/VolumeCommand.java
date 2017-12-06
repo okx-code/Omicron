@@ -13,7 +13,7 @@ public class VolumeCommand extends Command {
     }
 
     @Override
-    public void run(Omicron omicron, Guild guild, TextChannel channel, Member member, Message message, String content) {
+    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
         channel.sendMessage("Right click Omicron in its voice channel and change its user volume for you personally.").queue();
     }
 }

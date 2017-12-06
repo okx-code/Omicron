@@ -12,7 +12,7 @@ public class CustomCommand extends Command {
     }
 
     @Override
-    public void run(Omicron omicron, Guild guild, TextChannel channel, Member member, Message message, String content) {
+    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
         if(!member.hasPermission(Permission.MESSAGE_MANAGE)) {
             channel.sendMessage("You need permission to manage messages in order to use this command.").queue();
             return;

@@ -12,13 +12,13 @@ public abstract class Command {
         this.name = name;
     }
 
-    public Omicron getOmicron() {
+    public final Omicron getOmicron() {
         return omicron;
     }
 
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
-    public abstract void run(Omicron omicron, Guild guild, TextChannel channel, Member member, Message message, String content);
+    public abstract void run(Guild guild, TextChannel channel, Member member, Message message, String content);
 }
