@@ -28,7 +28,7 @@ public class Omicron {
 
     public static void main(String[] args) throws IOException, LoginException,
             InterruptedException, RateLimitedException, URISyntaxException {
-        System.setProperty("user.timezone", "GMT");
+        System.setProperty("user.timezone", "UTC");
 
         JDA jda = new JDABuilder(AccountType.BOT)
                 .setToken(IOUtils.toString(new File("token.txt").toURI(), "UTF-8").trim())
