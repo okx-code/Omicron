@@ -72,8 +72,8 @@ public class HelpCommand extends Command {
                             prefix + "skip",
                     false);
         }
-        eb.setFooter("Use " + prefix + name + " <command> to get help with a specific command,\n" +
-            "eg " + prefix + name + " feed. **<>** is required, **[]** is optional", null);
+        eb.setFooter("Use " + prefix + name + " <command> to get help with a specific command, eg " + prefix + name + " feed. \n" +
+                "<> is required, [] is optional", null);
         channel.sendMessage(eb.build()).queue();
     }
 }
