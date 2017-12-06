@@ -15,9 +15,11 @@ import sh.okx.omicron.feed.FeedHandler;
 import sh.okx.omicron.feed.FeedListener;
 
 import java.io.IOException;
-import java.text.DateFormat;
 import java.time.Instant;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RedditHandler implements FeedHandler {
@@ -57,7 +59,7 @@ public class RedditHandler implements FeedHandler {
             @Override
             public void run() {
 
-                System.out.println("Last checked start: " + DateFormat.getTimeInstance(DateFormat.MEDIUM).format(lastChecked));
+                System.out.println("Last checked start: " + lastChecked.toString());
 
                 try {
                     // Create a unique User-Agent for our bot
@@ -91,7 +93,7 @@ public class RedditHandler implements FeedHandler {
                     }
                     lastChecked = fetch.get(0).getCreated().toInstant();
 
-                    System.out.println("Last end: " + DateFormat.getTimeInstance(DateFormat.MEDIUM).format(lastChecked));
+                    System.out.println("Last end: " + lastChecked.toString());
                 } catch(Exception ex) {
                     cancelled = true;
                     ex.printStackTrace();

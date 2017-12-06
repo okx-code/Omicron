@@ -17,7 +17,7 @@ import java.time.Instant;
 import java.util.*;
 
 public class YoutubeHandler implements FeedHandler {
-    private DateTime lastCheck = new DateTime(Instant.now().toEpochMilli());
+    private Instant lastCheck = Instant.now();
     private boolean cancelled;
     private TimerTask task;
 
@@ -46,7 +46,7 @@ public class YoutubeHandler implements FeedHandler {
                     List<SearchResult> results = searchResponse.getItems();
                     for(SearchResult result : results) {
                         SearchResultSnippet snippet = result.getSnippet();
-                        if(compare(snippet.getPublishedAt(), lastCheck) <= 0) {
+                        if(Long.compare(snippet.getPublishedAt().getValue(), lastCheck.toEpochMilli()) <= 0) {
                             continue;
                         }
 
@@ -56,7 +56,7 @@ public class YoutubeHandler implements FeedHandler {
                         });
                     }
 
-                    lastCheck = results.get(0).getSnippet().getPublishedAt();
+                    lastCheck = Instant.ofEpochMilli(results.get(0).getSnippet().getPublishedAt().getValue());
                 } catch (IOException e) {
                     e.printStackTrace();
                     this.cancel();
