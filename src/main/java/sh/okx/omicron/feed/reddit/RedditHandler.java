@@ -15,14 +15,11 @@ import sh.okx.omicron.feed.FeedHandler;
 import sh.okx.omicron.feed.FeedListener;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RedditHandler implements FeedHandler {
-    private long lastChecked = System.currentTimeMillis();
+    private long lastChecked = Calendar.getInstance().getTimeInMillis();
     private String subredditName;
     private TimerTask task;
     private boolean cancelled = false;
