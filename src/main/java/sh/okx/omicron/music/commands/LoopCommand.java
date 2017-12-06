@@ -5,12 +5,15 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import sh.okx.omicron.Omicron;
+import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
 import sh.okx.omicron.music.TrackScheduler;
 
 public class LoopCommand extends Command {
     public LoopCommand(Omicron omicron) {
-        super(omicron, "loop");
+        super(omicron, "loop", Category.MUSIC,
+                "Toggle looping. When enabled, this will repeat the next queued song forever.\n" +
+                        "Usage: **o/loop**.");
     }
 
     @Override

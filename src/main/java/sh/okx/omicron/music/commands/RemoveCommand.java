@@ -6,6 +6,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import sh.okx.omicron.Omicron;
+import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
 import sh.okx.omicron.music.TrackData;
 
@@ -13,7 +14,10 @@ import java.util.List;
 
 public class RemoveCommand extends Command {
     public RemoveCommand(Omicron omicron) {
-        super(omicron, "remove");
+        super(omicron, "remove", Category.MUSIC,
+                "Remove the song at the specified position in the queue.\n" +
+                        "You must either have manage channels permission or have added the song to the queue.\n" +
+                        "Usage: **o/remove <index>**");
     }
 
     @Override

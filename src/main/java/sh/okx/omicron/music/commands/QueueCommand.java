@@ -8,6 +8,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import sh.okx.omicron.Omicron;
+import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
 import sh.okx.omicron.music.GuildMusicManager;
 import sh.okx.omicron.music.TrackData;
@@ -17,7 +18,8 @@ import java.util.List;
 
 public class QueueCommand extends Command {
     public QueueCommand(Omicron omicron) {
-        super(omicron, "queue");
+        super(omicron, "queue", Category.MUSIC,
+                "Show the song currently playing and those which are in the queue to play later.");
     }
 
     @Override

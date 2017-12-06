@@ -3,12 +3,16 @@ package sh.okx.omicron.roles;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
 import sh.okx.omicron.Omicron;
+import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
 import sh.okx.omicron.util.Util;
 
 public class RoleCommand extends Command {
     public RoleCommand(Omicron omicron) {
-        super(omicron, "role");
+        super(omicron, "role", Category.MISC,
+                "Give a default role to people when they join. Users must have the manage server permission to use this command.\n" +
+                        "To set the role, use **o/role default <role id/name/mention>**.\n" +
+                        "To check what the default role currently is, use **o/role get**.");
     }
 
     @Override

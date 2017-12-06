@@ -17,7 +17,6 @@ public class CommandManager extends ListenerAdapter {
 
     public CommandManager(String prefix, Omicron omicron) {
         this.commands = new Command[] {
-                new PingCommand(omicron),
                 new FeedCommand(omicron),
                 new TriviaCommand(omicron),
                 new RoleCommand(omicron),
@@ -49,8 +48,16 @@ public class CommandManager extends ListenerAdapter {
         this.prefix = prefix;
     }
 
+    public Command[] getCommands() {
+        return commands;
+    }
+
     @Override
     public void onMessageReceived(MessageReceivedEvent e) {
+        if(e.getMember() == null || e.getMember().getUser() == null || e.getMember().getUser().isBot()) {
+            return;
+        }
+
         String[] parts = e.getMessage().getRawContent().split(" ", 2);
         if(!parts[0].startsWith(prefix)) {
             return;

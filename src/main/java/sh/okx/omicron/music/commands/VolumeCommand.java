@@ -5,11 +5,12 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import sh.okx.omicron.Omicron;
+import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
 
 public class VolumeCommand extends Command {
     public VolumeCommand(Omicron omicron) {
-        super(omicron, "volume");
+        super(omicron, "volume", Category.MUSIC, "A command to tell you how to use discord.");
     }
 
     @Override

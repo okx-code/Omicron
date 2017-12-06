@@ -7,7 +7,11 @@ import sh.okx.omicron.command.Command;
 
 public class ResolveIdCommand extends Command {
     public ResolveIdCommand(Omicron omicron) {
-        super(omicron, "resolveid");
+        super(omicron, "resolveid", sh.okx.omicron.command.Category.MISC,
+                "Find out what a specific ID is used for.\n" +
+                        "Usage: **o/resolveid <id>**\n" +
+                        "This can resolve roles, guilds, categories, emotes, and channels; but not messages. " +
+                        "As well as that, the bot needs to know about the ID. It can't find a role in a guild it's not in.");
     }
 
     @Override

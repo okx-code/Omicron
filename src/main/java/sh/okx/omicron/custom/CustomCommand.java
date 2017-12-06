@@ -3,12 +3,21 @@ package sh.okx.omicron.custom;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
 import sh.okx.omicron.Omicron;
+import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
 import sh.okx.omicron.util.Util;
 
 public class CustomCommand extends Command {
     public CustomCommand(Omicron omicron) {
-        super(omicron, "custom");
+        super(omicron, "custom", Category.MISC,
+                "Register custom commands for a guild. Users must have the manage messages permission to use this command.\n" +
+                        "Usage: **o/custom <who> | <command> [| <response>]**\n" +
+                        "**<who>** indicates which users are able to trigger this command. This can be a user, a role, or everyone. " +
+                        "For users, you can user their name, their nickname, mention them or use their ID. " +
+                        "For roles, you can mention it, use its name, or use its ID. " +
+                        "For everyone, you can use 'everyone' or 'all'.\n" +
+                        "The command is what users type to trigger this. This is case-insensitive.\n" +
+                        "The response is what the bot sends when the command is triggered.");
     }
 
     @Override

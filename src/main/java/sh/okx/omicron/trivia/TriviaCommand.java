@@ -8,6 +8,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import sh.okx.omicron.Omicron;
+import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
 
 import java.io.IOException;
@@ -21,7 +22,10 @@ public class TriviaCommand extends Command {
 
 
     public TriviaCommand(Omicron omicron) {
-        super(omicron, "trivia");
+        super(omicron, "trivia", Category.MISC,
+                "Trivia questions. Run without any arguments for a random category,\n" +
+                        "Use **o/trivia categories** to list categories, and use\n" +
+                        "**o/trivia <category>** for a question in a specific category.");
 
         categories.put("General Knowledge", 9);
         categories.put("Books", 10);

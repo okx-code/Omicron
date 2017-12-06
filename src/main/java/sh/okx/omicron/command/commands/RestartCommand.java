@@ -5,6 +5,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import sh.okx.omicron.Omicron;
+import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
 
 import java.io.File;
@@ -14,7 +15,9 @@ import java.nio.file.StandardOpenOption;
 
 public class RestartCommand extends Command {
     public RestartCommand(Omicron omicron) {
-        super(omicron, "restart");
+        super(omicron, "restart", Category.MISC,
+                "Pull the latest update from the master branch on git and restart the bot. " +
+                        "This command can only be used by the bot developers.");
     }
 
     @Override

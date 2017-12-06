@@ -7,6 +7,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import sh.okx.omicron.Omicron;
+import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
 
 import java.util.HashMap;
@@ -16,7 +17,10 @@ public class SkipCommand extends Command {
     private Map<String, Integer> votes = new HashMap<>();
 
     public SkipCommand(Omicron omicron) {
-        super(omicron, "skip");
+        super(omicron, "skip", Category.MUSIC,
+                "Skips the currently playing song. People with manage channels permission will instantly skip, " +
+                        "otherwise at least 50% of people in the bot's voice channel must vote to skip.\n" +
+                        "Usage: **o/skip**");
     }
 
     @Override
