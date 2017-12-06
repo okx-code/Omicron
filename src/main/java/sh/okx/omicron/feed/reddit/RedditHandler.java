@@ -54,8 +54,9 @@ public class RedditHandler implements FeedHandler {
         task = new TimerTask() {
             @Override
             public void run() {
-
                 try {
+                    System.out.println(lastChecked);
+
                     // Create a unique User-Agent for our bot
                     UserAgent userAgent = UserAgent.of("desktop", "sh.okx.omicron", "0.1-SNAPSHOT", lines[0]);
                     RedditClient redditClient = new RedditClient(userAgent);
@@ -87,6 +88,7 @@ public class RedditHandler implements FeedHandler {
                         }
                     }
                     lastChecked = fetch.get(0).getCreated().getTime();
+                    System.out.println(lastChecked);
                 } catch(Exception ex) {
                     cancelled = true;
                     ex.printStackTrace();
