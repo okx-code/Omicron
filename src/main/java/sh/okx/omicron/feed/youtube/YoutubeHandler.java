@@ -19,6 +19,7 @@ public class YoutubeHandler implements FeedHandler {
     private long lastChecked = -1;
     private boolean cancelled;
     private TimerTask task;
+    private String id;
 
     private Set<AbstractYoutubeListener> listeners = new HashSet<>();
 
@@ -26,7 +27,13 @@ public class YoutubeHandler implements FeedHandler {
         listeners.add((AbstractYoutubeListener) listener);
     }
 
+    @Override
+    public String getContent() {
+        return id;
+    }
+
     public YoutubeHandler(String id) {
+        this.id = id;
         task = new TimerTask() {
             @Override
             public void run() {

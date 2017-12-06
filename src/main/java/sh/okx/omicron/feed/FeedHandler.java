@@ -5,4 +5,5 @@ public interface FeedHandler {
     void start();
     boolean isCancelled();
     void addListener(FeedListener listener);
+    String getContent();
 }

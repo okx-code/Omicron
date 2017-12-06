@@ -12,9 +12,13 @@ import sh.okx.omicron.feed.youtube.YoutubeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FeedManager {
     private Omicron omicron;
+
+    private Map<FeedHandler, FeedListener> loadedHandlers = new HashMap<>();
 
     public FeedManager(Omicron omicron) {
         this.omicron = omicron;
@@ -25,14 +29,32 @@ public class FeedManager {
 
             Connection connection = omicron.getConnection();
 
-            Statement statement = connection.createStatement();
-            statement.execute("CREATE TABLE IF NOT EXISTS feeds (prefix VARCHAR(255), " +
+            Statement table = connection.createStatement();
+            table.execute("CREATE TABLE IF NOT EXISTS feeds (prefix VARCHAR(255), " +
                     "type VARCHAR(20), " +
                     "channel BIGINT(20), " +
                     "content VARCHAR(255) );");
 
-            // close connections
-            statement.close();
+            table.close();
+
+            Statement feeds = connection.createStatement();
+            ResultSet rs = feeds.executeQuery("SELECT * FROM feeds;");
+
+            while(rs.next()) {
+                TextChannel channel = omicron.getJDA().getTextChannelById(rs.getString("channel"));
+                if(channel == null) {
+                    continue;
+                }
+                try {
+                    loadFeed(rs.getString("prefix"), FeedType.valueOf(rs.getString("type")),
+                            channel, rs.getString("content"));
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            feeds.close();
+
             connection.close();
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -51,9 +73,17 @@ public class FeedManager {
 
                 statement.execute();
 
-                // close connections
                 statement.close();
                 connection.close();
+
+                loadedHandlers.entrySet().removeIf(next -> {
+                    if(next.getKey().getContent().equalsIgnoreCase(content) &&
+                            next.getValue().channel.getId().equals(channel)) {
+                        next.getKey().cancel();
+                        return next.getKey().isCancelled();
+                    }
+                    return false;
+                });
             } catch(SQLException ex) {
                 ex.printStackTrace();
             }
@@ -68,13 +98,9 @@ public class FeedManager {
             statement.setString(1, channelId);
             statement.setString(2, content);
 
-            statement.execute();
-
-            ResultSet rs = statement.getResultSet();
+            ResultSet rs = statement.executeQuery();
             boolean yes = rs.next();
 
-            // close connections
-            rs.close();
             statement.close();
             connection.close();
 
@@ -85,6 +111,15 @@ public class FeedManager {
         }
     }
 
+    /**
+     * Adds a feed to the SQL database and then loads it
+     * @see FeedManager#loadFeed(String, FeedType, TextChannel, String)
+     * @param prefix
+     * @param type
+     * @param channel
+     * @param content
+     * @throws MalformedURLException
+     */
     public void addFeed(String prefix, FeedType type, TextChannel channel, String content) throws MalformedURLException {
         new Thread(() -> {
             try {
@@ -99,7 +134,6 @@ public class FeedManager {
 
                 statement.execute();
 
-                // close connections
                 statement.close();
                 connection.close();
             } catch (SQLException e) {
@@ -110,6 +144,14 @@ public class FeedManager {
         loadFeed(prefix, type, channel, content);
     }
 
+    /**
+     * Loads a feed to send feed updates to a channel
+     * @param prefix The message to send before the feed information
+     * @param type The type of feed
+     * @param channel Which channel this feed is registered to
+     * @param content Data the feed handler may use
+     * @throws MalformedURLException
+     */
     public void loadFeed(String prefix, FeedType type, TextChannel channel, String content) throws MalformedURLException {
         prefix = prefix.replace("<everyone>", "@everyone");
 
@@ -133,6 +175,8 @@ public class FeedManager {
         }
         handler.addListener(listener);
         handler.start();
+
+        loadedHandlers.put(handler, listener);
 
         System.out.println("Registered feed " + prefix + " : " + type + " : " + content);
         System.out.println("Channel: " + channel.getId());

@@ -32,6 +32,11 @@ public class RedditHandler implements FeedHandler {
         listeners.add((AbstractRedditListener) listener);
     }
 
+    @Override
+    public String getContent() {
+        return subredditName;
+    }
+
     public RedditHandler(String subredditName) {
         this.subredditName = subredditName;
     }
@@ -93,7 +98,6 @@ public class RedditHandler implements FeedHandler {
                         }
                     }
                     lastChecked = fetch.get(0).getCreated().toInstant().toEpochMilli();
-                    System.out.println(lastChecked);
                 } catch(Exception ex) {
                     cancelled = true;
                     ex.printStackTrace();

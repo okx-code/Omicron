@@ -17,12 +17,19 @@ public class RssHandler implements FeedHandler {
     private boolean cancelled = false;
     private Set<AbstractRssListener> listeners = new HashSet<>();
     private TimerTask task;
+    private URL url;
 
     public void addListener(FeedListener listener) {
         listeners.add((AbstractRssListener) listener);
     }
 
+    @Override
+    public String getContent() {
+        return url.toString();
+    }
+
     public RssHandler(URL feedUrl) {
+        this.url = feedUrl;
         this.task = new TimerTask() {
             @Override
             public void run() {
