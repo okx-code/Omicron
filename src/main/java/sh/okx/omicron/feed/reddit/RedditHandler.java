@@ -15,12 +15,14 @@ import sh.okx.omicron.feed.FeedHandler;
 import sh.okx.omicron.feed.FeedListener;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RedditHandler implements FeedHandler {
-    private long lastChecked = Instant.now().toEpochMilli();
+    private long lastChecked = System.currentTimeMillis();
     private String subredditName;
     private TimerTask task;
     private boolean cancelled = false;
@@ -88,7 +90,7 @@ public class RedditHandler implements FeedHandler {
                             });
                         }
                     }
-                    lastChecked = fetch.get(0).getCreated().toInstant().getEpochSecond();
+                    lastChecked = fetch.get(0).getCreated().getTime();
                     System.out.println(lastChecked);
                 } catch(Exception ex) {
                     cancelled = true;
