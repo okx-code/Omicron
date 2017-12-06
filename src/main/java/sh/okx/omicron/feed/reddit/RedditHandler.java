@@ -13,7 +13,6 @@ import org.apache.commons.io.IOUtils;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.feed.FeedHandler;
 import sh.okx.omicron.feed.FeedListener;
-import sh.okx.omicron.feed.rss.AbstractRssListener;
 
 import java.io.IOException;
 import java.util.*;
@@ -85,7 +84,7 @@ public class RedditHandler implements FeedHandler {
                             });
                         }
                     }
-                    lastChecked = fetch.get(0).getCreated();
+                    lastChecked = fetch.get(fetch.size() - 1).getCreated();
                 } catch(Exception ex) {
                     cancelled = true;
                     ex.printStackTrace();
