@@ -8,10 +8,10 @@ import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
 import com.google.api.services.youtube.model.SearchResultSnippet;
 import org.apache.commons.io.IOUtils;
-import sh.okx.omicron.Omicron;
 import sh.okx.omicron.feed.FeedHandler;
 import sh.okx.omicron.feed.FeedListener;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -42,7 +42,7 @@ public class YoutubeHandler implements FeedHandler {
 
                 try {
                     YouTube.Search.List search = youtube.search().list("id,snippet");
-                    search.setKey(IOUtils.toString(Omicron.class.getResourceAsStream("/google_api_key.txt"), "UTF-8"));
+                    search.setKey(IOUtils.toString(new File("google_api_key.txt").toURI(), "UTF-8"));
                     search.setChannelId(id);
                     search.setOrder("date");
                     search.setMaxResults(20L);
