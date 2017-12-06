@@ -10,10 +10,11 @@ import sh.okx.omicron.feed.FeedListener;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.Instant;
 import java.util.*;
 
 public class RssHandler implements FeedHandler {
-    private Date lastCheck = new Date();
+    private Date lastCheck = new Date(Instant.now().toEpochMilli());
     private boolean cancelled = false;
     private Set<AbstractRssListener> listeners = new HashSet<>();
     private TimerTask task;
