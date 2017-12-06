@@ -20,7 +20,7 @@ public class RestartCommand extends Command {
     @Override
     public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
         try {
-            channel.sendMessage("Pulling from git and shutting down...").queue();
+            channel.sendMessage("Pulling from git and shutting down...").complete();
             Runtime.getRuntime().exec("./start.sh &> output.log &");
             omicron.getJDA().shutdown();
 
