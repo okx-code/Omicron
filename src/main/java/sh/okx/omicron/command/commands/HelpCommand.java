@@ -29,6 +29,8 @@ public class HelpCommand extends Command {
                         "To set the role, use **o/role default <role id/name/mention>**.\n" +
                         "To check what the default role currently is, use **o/role get**.");
         help.put("think", "Have a think **o/think**.");
+        help.put("custom", "Register custom commands for a guild.\n" +
+                "Usage: **o/custom <who> | <command> [| <response>]");
 
         // Music
         help.put("play", "Play a song. This only supports YouTube videos currently.\n" +
@@ -71,7 +73,7 @@ public class HelpCommand extends Command {
                     false);
         }
         eb.setFooter("Use " + prefix + name + " <command> to get help with a specific command,\n" +
-            "eg " + prefix + name + " feed", null);
+            "eg " + prefix + name + " feed. **<>** is required, **[]** is optional", null);
         channel.sendMessage(eb.build()).queue();
     }
 }

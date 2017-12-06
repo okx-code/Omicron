@@ -3,10 +3,7 @@ package sh.okx.omicron.command;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import sh.okx.omicron.Omicron;
-import sh.okx.omicron.command.commands.HelpCommand;
-import sh.okx.omicron.command.commands.PingCommand;
-import sh.okx.omicron.command.commands.RestartCommand;
-import sh.okx.omicron.command.commands.ThinkCommand;
+import sh.okx.omicron.command.commands.*;
 import sh.okx.omicron.custom.CustomCommand;
 import sh.okx.omicron.feed.FeedCommand;
 import sh.okx.omicron.music.commands.*;
@@ -36,6 +33,7 @@ public class CommandManager extends ListenerAdapter {
                 new CustomCommand(omicron),
                 new HelpCommand(omicron),
                 new RestartCommand(omicron),
+                new ResolveIdCommand(omicron),
         };
         this.prefix = prefix;
         this.omicron = omicron;
