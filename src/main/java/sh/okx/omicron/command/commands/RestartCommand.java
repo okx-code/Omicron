@@ -19,9 +19,14 @@ public class RestartCommand extends Command {
 
     @Override
     public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
+        long id = member.getUser().getIdLong();
+        if(!(id == 115090410849828865L || id == 181103798616326144L)) {
+            return;
+        }
+
         try {
             channel.sendMessage("Pulling from git and shutting down...").complete();
-            Runtime.getRuntime().exec("./start.sh &> output.log &");
+            Runtime.getRuntime().exec("./start.sh &");
             omicron.getJDA().shutdown();
 
             File shutdownChannel = new File("shutdown_channel.txt");
