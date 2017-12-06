@@ -15,15 +15,11 @@ import sh.okx.omicron.feed.FeedHandler;
 import sh.okx.omicron.feed.FeedListener;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RedditHandler implements FeedHandler {
-    private Instant lastChecked = Instant.now();
+    private long lastChecked = Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTimeInMillis();
     private String subredditName;
     private TimerTask task;
     private boolean cancelled = false;
@@ -59,8 +55,6 @@ public class RedditHandler implements FeedHandler {
             @Override
             public void run() {
 
-                System.out.println("Last checked start: " + lastChecked.toString());
-
                 try {
                     // Create a unique User-Agent for our bot
                     UserAgent userAgent = UserAgent.of("desktop", "sh.okx.omicron", "0.1-SNAPSHOT", lines[0]);
@@ -84,16 +78,15 @@ public class RedditHandler implements FeedHandler {
                     Listing<Submission> fetch = subreddit.fetch();
                     for (int i = fetch.size() - 1; i >= 0; i--) {
                         Submission submission = fetch.get(i);
-                        if (submission.getCreated().toInstant().compareTo(lastChecked) > 0) {
+                        if (Long.compare(submission.getCreated().getTime(), lastChecked) > 0) {
                             listeners.forEach(listener -> {
-                                listener.handlePrefix();
+                                listener.
+                                        handlePrefix();
                                 listener.on(subreddit, submission);
                             });
                         }
                     }
-                    lastChecked = fetch.get(0).getCreated().toInstant();
-
-                    System.out.println("Last end: " + lastChecked.toString());
+                    lastChecked = fetch.get(0).getCreated().getTime();
                 } catch(Exception ex) {
                     cancelled = true;
                     ex.printStackTrace();

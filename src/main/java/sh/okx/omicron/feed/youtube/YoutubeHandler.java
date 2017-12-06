@@ -13,11 +13,10 @@ import sh.okx.omicron.feed.FeedHandler;
 import sh.okx.omicron.feed.FeedListener;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.*;
 
 public class YoutubeHandler implements FeedHandler {
-    private Instant lastCheck = Instant.now();
+    private long lastChecked = Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTimeInMillis();
     private boolean cancelled;
     private TimerTask task;
 
@@ -46,7 +45,7 @@ public class YoutubeHandler implements FeedHandler {
                     List<SearchResult> results = searchResponse.getItems();
                     for(SearchResult result : results) {
                         SearchResultSnippet snippet = result.getSnippet();
-                        if(Long.compare(snippet.getPublishedAt().getValue(), lastCheck.toEpochMilli()) <= 0) {
+                        if(Long.compare(snippet.getPublishedAt().getValue(), lastChecked) <= 0) {
                             continue;
                         }
 
@@ -56,7 +55,7 @@ public class YoutubeHandler implements FeedHandler {
                         });
                     }
 
-                    lastCheck = Instant.ofEpochMilli(results.get(0).getSnippet().getPublishedAt().getValue());
+                    lastChecked = results.get(0).getSnippet().getPublishedAt().getValue();
                 } catch (IOException e) {
                     e.printStackTrace();
                     this.cancel();

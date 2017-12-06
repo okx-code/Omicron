@@ -10,11 +10,10 @@ import sh.okx.omicron.feed.FeedListener;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.Instant;
 import java.util.*;
 
 public class RssHandler implements FeedHandler {
-    private Date lastCheck = new Date(Instant.now().toEpochMilli());
+    private long lastChecked = Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTimeInMillis();
     private boolean cancelled = false;
     private Set<AbstractRssListener> listeners = new HashSet<>();
     private TimerTask task;
@@ -34,7 +33,7 @@ public class RssHandler implements FeedHandler {
                     Collections.reverse(entries);
 
                     for(SyndEntry entry : entries) {
-                        if(entry.getPublishedDate().compareTo(lastCheck) <= 0) {
+                        if(Long.compare(entry.getPublishedDate().getTime(), lastChecked) <= 0) {
                             continue;
                         }
 
@@ -44,7 +43,7 @@ public class RssHandler implements FeedHandler {
                         });
                     }
 
-                    lastCheck = entries.get(entries.size()-1).getPublishedDate();
+                    lastChecked = entries.get(entries.size()-1).getPublishedDate().getTime();
                 } catch (FeedException | IOException e) {
                     e.printStackTrace();
                     this.cancel();
