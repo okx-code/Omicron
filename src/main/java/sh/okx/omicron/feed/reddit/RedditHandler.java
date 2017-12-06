@@ -21,7 +21,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RedditHandler implements FeedHandler {
-    private Date lastChecked = new Date(Instant.now().toEpochMilli());
+    private Instant lastChecked = Instant.now();
     private String subredditName;
     private TimerTask task;
     private boolean cancelled = false;
@@ -82,14 +82,14 @@ public class RedditHandler implements FeedHandler {
                     Listing<Submission> fetch = subreddit.fetch();
                     for (int i = fetch.size() - 1; i >= 0; i--) {
                         Submission submission = fetch.get(i);
-                        if (submission.getCreated().compareTo(lastChecked) > 0) {
+                        if (submission.getCreated().toInstant().compareTo(lastChecked) > 0) {
                             listeners.forEach(listener -> {
                                 listener.handlePrefix();
                                 listener.on(subreddit, submission);
                             });
                         }
                     }
-                    lastChecked = fetch.get(0).getCreated();
+                    lastChecked = fetch.get(0).getCreated().toInstant();
 
                     System.out.println("Last end: " + DateFormat.getTimeInstance(DateFormat.MEDIUM).format(lastChecked));
                 } catch(Exception ex) {
