@@ -4,6 +4,7 @@ import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import org.apache.commons.io.IOUtils;
 import sh.okx.omicron.command.CommandManager;
@@ -26,6 +27,16 @@ public class Omicron {
                 .setToken(IOUtils.toString(new File("token.txt").toURI(), "UTF-8").trim())
                 .setGame(Game.of(Game.GameType.DEFAULT, "o/help"))
                 .buildBlocking();
+
+        File shutdownChannel = new File("shutdown_channel.txt");
+        if(shutdownChannel.exists()) {
+            String channelId = IOUtils.toString(shutdownChannel.toURI(), "UTF-8");
+            TextChannel channel = jda.getTextChannelById(channelId);
+            if(channel != null) {
+                channel.sendMessage("Successfully restarted!").queue();
+            }
+            shutdownChannel.delete();
+        }
 
         Omicron omicron = new Omicron(jda);
         omicron.setupData();
@@ -50,6 +61,15 @@ public class Omicron {
         this.commandManager = new CommandManager("o/", this);
         this.roleManager = new RoleManager(this);
         this.customManager = new CustomManager(this);
+    }
+
+    public String getSqlPassword() {
+        try {
+            return IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim();
+        } catch(IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     /**

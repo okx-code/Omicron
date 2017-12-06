@@ -24,11 +24,7 @@ public class FeedManager {
 
     public FeedManager(Omicron omicron) {
         this.omicron = omicron;
-        try {
-            this.password = IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.password = omicron.getSqlPassword();
 
         try {
             // load the driver
