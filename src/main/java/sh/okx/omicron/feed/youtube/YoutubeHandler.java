@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class YoutubeHandler implements FeedHandler {
-    private long lastChecked = Calendar.getInstance().getTimeInMillis();
+    private long lastChecked = -1;
     private boolean cancelled;
     private TimerTask task;
 
@@ -43,6 +43,10 @@ public class YoutubeHandler implements FeedHandler {
 
                     SearchListResponse searchResponse = search.execute();
                     List<SearchResult> results = searchResponse.getItems();
+                    if(lastChecked < 0) {
+                        lastChecked = results.get(0).getSnippet().getPublishedAt().getValue();
+                    }
+
                     for(SearchResult result : results) {
                         SearchResultSnippet snippet = result.getSnippet();
                         if(Long.compare(snippet.getPublishedAt().getValue(), lastChecked) <= 0) {

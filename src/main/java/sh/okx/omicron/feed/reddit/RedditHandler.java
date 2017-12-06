@@ -15,12 +15,14 @@ import sh.okx.omicron.feed.FeedHandler;
 import sh.okx.omicron.feed.FeedListener;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RedditHandler implements FeedHandler {
-    private long lastChecked = Instant.now().toEpochMilli();
+    private long lastChecked = -1;
     private String subredditName;
     private TimerTask task;
     private boolean cancelled = false;
@@ -56,8 +58,6 @@ public class RedditHandler implements FeedHandler {
             @Override
             public void run() {
                 try {
-                    System.out.println(lastChecked + " :" + System.currentTimeMillis());
-
                     // Create a unique User-Agent for our bot
                     UserAgent userAgent = UserAgent.of("desktop", "sh.okx.omicron", "0.1-SNAPSHOT", lines[0]);
                     RedditClient redditClient = new RedditClient(userAgent);
@@ -78,6 +78,10 @@ public class RedditHandler implements FeedHandler {
                             .newest();
 
                     Listing<Submission> fetch = subreddit.fetch();
+                    if(lastChecked < 0) {
+                        lastChecked = fetch.get(0).getCreated().toInstant().toEpochMilli();
+                    }
+
                     for (int i = fetch.size() - 1; i >= 0; i--) {
                         Submission submission = fetch.get(i);
                         if (Long.compare(submission.getCreated().getTime(), lastChecked) > 0) {
