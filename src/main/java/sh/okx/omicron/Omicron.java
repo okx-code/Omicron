@@ -122,7 +122,6 @@ public class Omicron {
         data = new Data("data.json");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Shutting down and saving data.");
-            roleManager.save();
             customManager.save();
             System.out.println("Success!");
         }));

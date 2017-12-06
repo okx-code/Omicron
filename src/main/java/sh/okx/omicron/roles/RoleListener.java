@@ -23,8 +23,12 @@ public class    RoleListener extends ListenerAdapter {
 
         Guild guild = e.getGuild();
 
-        String defaultRole = omicron.getRoleManager().getDefaultRole(guild.getId());
-        if(defaultRole == null) {
+        if(!omicron.getRoleManager().hasDefaultRole(guild.getIdLong())) {
+            return;
+        }
+
+        long defaultRole = omicron.getRoleManager().getDefaultRole(guild.getIdLong());
+        if(defaultRole < 0) {
             return;
         }
 

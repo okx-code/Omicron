@@ -1,9 +1,8 @@
 package sh.okx.omicron.roles;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import sh.okx.omicron.Omicron;
 
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,39 +13,98 @@ public class RoleManager {
     public RoleManager(Omicron omicron) {
         this.omicron = omicron;
         omicron.getJDA().addEventListener(new RoleListener(omicron));
-        load();
+
+        new Thread(() -> {
+            try {
+                Connection connection = omicron.getConnection();
+
+                Statement table = connection.createStatement();
+
+                table.execute("CREATE TABLE IF NOT EXISTS roles (guild BIGINT(20), role BIGINT(20) );");
+
+                table.close();
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
-    public void load() {
-        JSONArray rolesJson = omicron.getData().getJSONArray("roles");
-        for(int i = 0; i < rolesJson.length(); i++) {
-            JSONObject roleJson = rolesJson.getJSONObject(i);
-            roles.put(roleJson.getString("guild"), roleJson.getString("role"));
+    public boolean hasDefaultRole(long guildId) {
+        try {
+            Connection connection = omicron.getConnection();
+
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM roles WHERE guild=?");
+            statement.setLong(1, guildId);
+
+            boolean yes = statement.executeQuery().next();
+
+            statement.close();
+            connection.close();
+
+            return yes;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
-    public void save() {
-        JSONArray rolesJson = new JSONArray();
-        for(Map.Entry<String, String> role : roles.entrySet()) {
-            JSONObject roleJson = new JSONObject();
-            roleJson.put("guild", role.getKey());
-            roleJson.put("role", role.getValue());
+    public void setDefaultRole(long guild, long role) {
+        new Thread(() -> {
+            try {
+                Connection connection = omicron.getConnection();
 
-            rolesJson.put(roleJson);
+                PreparedStatement statement = connection.prepareStatement("REPLACE INTO roles (guild, role) " +
+                        "VALUES (?, ?);");
+                statement.setLong(1, guild);
+                statement.setLong(2, role);
+
+                statement.execute();
+
+                statement.close();
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    public void removeDefaultRole(long guild) {
+        new Thread(() -> {
+            try {
+                Connection connection = omicron.getConnection();
+
+                PreparedStatement statement = connection.prepareStatement("DELETE FROM roles WHERE guild=?;");
+                statement.setLong(1, guild);
+
+                statement.execute();
+
+                statement.close();
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    public long getDefaultRole(long guild) {
+        try {
+            Connection connection = omicron.getConnection();
+
+            PreparedStatement statement = connection.prepareStatement("SELECT role FROM roles WHERE guild=?");
+            statement.setLong(1, guild);
+
+            ResultSet rs = statement.executeQuery();
+            rs.next();
+            long role = rs.getLong("role");
+
+            statement.close();
+            connection.close();
+
+            return role;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
         }
-
-        omicron.getData().set("roles", rolesJson);
-    }
-
-    public void setDefaultRole(String guild, String role) {
-        roles.put(guild, role);
-    }
-
-    public void removeDefaultRole(String guild) {
-        roles.remove(guild);
-    }
-
-    public String getDefaultRole(String guild) {
-        return roles.get(guild);
     }
 }
