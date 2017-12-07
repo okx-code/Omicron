@@ -8,6 +8,7 @@ import com.google.api.services.youtube.model.*;
 import org.apache.commons.io.IOUtils;
 import sh.okx.omicron.Omicron;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class YoutubeAPI {
             // Define the API request for retrieving search results.
             YouTube.Search.List search = youtube.search().list("id,snippet");
 
-            search.setKey(IOUtils.toString(Omicron.class.getResourceAsStream("/google_api_key.txt"), "UTF-8"));
+            search.setKey(IOUtils.toString(new File("google_api_key.txt").toURI(), "UTF-8"));
             search.setQ(query);
 
             // Restrict the search results to only include videos. See:
