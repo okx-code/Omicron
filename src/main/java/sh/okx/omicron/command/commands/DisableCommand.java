@@ -1,5 +1,6 @@
 package sh.okx.omicron.command.commands;
 
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
@@ -26,6 +27,10 @@ public class DisableCommand extends Command {
             channel.sendMessage("This must be run in a guild!").queue();
             return;
         }
+        if(member.hasPermission(Permission.MANAGE_SERVER)) {
+            channel.sendMessage("You need manage server permission to run this command!").queue();
+            return;
+        }
 
         CommandManager commandManager = omicron.getCommandManager();
 
@@ -40,6 +45,12 @@ public class DisableCommand extends Command {
 
         if(disableCommand == null) {
             channel.sendMessage("Cannot find command: " + commandName + ".").queue();
+            return;
+        }
+
+        String name = disableCommand.getName().toLowerCase();
+        if(name.equals("disable") || name.equals("enable")) {
+            channel.sendMessage("That command cannot be disabled!").queue();
             return;
         }
 
