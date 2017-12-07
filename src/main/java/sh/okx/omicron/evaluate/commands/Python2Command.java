@@ -19,6 +19,11 @@ public class Python2Command extends Command {
 
     @Override
     public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+        if(content.isEmpty()) {
+            channel.sendMessage("Usage: **o/python2 <command(s)>**").queue();
+            return;
+        }
+
         omicron.getEvaluateManager().commandLanguage(channel, content, "python2");
     }
 }

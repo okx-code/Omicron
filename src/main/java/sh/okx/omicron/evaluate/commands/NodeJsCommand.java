@@ -19,6 +19,11 @@ public class NodeJsCommand extends Command {
 
     @Override
     public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+        if(content.isEmpty()) {
+            channel.sendMessage("Usage: **o/nodejs <command(s)>**").queue();
+            return;
+        }
+
         omicron.getEvaluateManager().commandLanguage(channel, content, "javascript-node");
     }
 }

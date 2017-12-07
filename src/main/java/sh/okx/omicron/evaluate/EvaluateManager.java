@@ -19,11 +19,6 @@ import java.util.zip.DeflaterOutputStream;
 
 public class EvaluateManager {
     public void commandLanguage(MessageChannel channel, String content, String language) {
-        if(content.isEmpty()) {
-            channel.sendMessage("Usage: **o/" + language + " <command(s)>").queue();
-            return;
-        }
-
         Evaluation eval = eval(content, language);
         if(eval == null) {
             channel.sendMessage("An unexpected error occured trying to evaluate that code. " +

@@ -19,6 +19,11 @@ public class PythonCommand extends Command {
 
     @Override
     public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+        if(content.isEmpty()) {
+            channel.sendMessage("Usage: **o/python3 <command(s)>**").queue();
+            return;
+        }
+
         omicron.getEvaluateManager().commandLanguage(channel, content, "python3");
     }
 }
