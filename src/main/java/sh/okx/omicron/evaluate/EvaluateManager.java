@@ -53,7 +53,7 @@ public class EvaluateManager {
                 output.append(line).append("\n");
             }
 
-            String[] split2 = split[2].split("\\n\\n");
+            String[] split2 = split[2].split("\\n\\nReal time: ");
 
             if(split2.length > 1) {
                 debug = split2[0];
@@ -71,9 +71,7 @@ public class EvaluateManager {
 
         embedBuilder.setTitle("Evaluation");
 
-        embedBuilder.addField("Input", "```" + evaluation.getLanguage()
-                .replaceAll("\\d", "")
-                .split("-")[0] + "\n" +
+        embedBuilder.addField("Input", "```" + evaluation.getLanguage() + "\n" +
                 evaluation.getInput() + "\n```", false);
 
         embedBuilder.addField("Output", "```\n" + evaluation.getOutput() + "\n```", true);
