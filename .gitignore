@@ -1,9 +1,10 @@
 /src/main/resources/token.txt
-/src/main/resources/google_api_key.txt
-/src/main/resources/reddit_authentication.txt
+/src/main/resources/token_test.txt
 .gradle/
 .idea/
 build/
-/src/main/resources/token_test.txt
-/token.txt
-/db_password.txt
+token.txt
+db_password.txt
+google_api_key.txt
+reddit_authentication.txt
+data.json

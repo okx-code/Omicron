@@ -3,8 +3,14 @@ package sh.okx.omicron.command;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import sh.okx.omicron.Omicron;
-import sh.okx.omicron.command.commands.*;
+import sh.okx.omicron.command.commands.HelpCommand;
+import sh.okx.omicron.command.commands.ResolveIdCommand;
+import sh.okx.omicron.command.commands.RestartCommand;
+import sh.okx.omicron.command.commands.ThinkCommand;
 import sh.okx.omicron.custom.CustomCommand;
+import sh.okx.omicron.evaluate.commands.NodeJsCommand;
+import sh.okx.omicron.evaluate.commands.Python2Command;
+import sh.okx.omicron.evaluate.commands.PythonCommand;
 import sh.okx.omicron.feed.FeedCommand;
 import sh.okx.omicron.music.commands.*;
 import sh.okx.omicron.roles.RoleCommand;
@@ -33,6 +39,9 @@ public class CommandManager extends ListenerAdapter {
                 new HelpCommand(omicron),
                 new RestartCommand(omicron),
                 new ResolveIdCommand(omicron),
+                new PythonCommand(omicron),
+                new Python2Command(omicron),
+                new NodeJsCommand(omicron),
         };
         this.prefix = prefix;
         this.omicron = omicron;
@@ -64,7 +73,14 @@ public class CommandManager extends ListenerAdapter {
         }
 
         for(Command command : commands) {
-            if(!parts[0].equalsIgnoreCase(prefix + command.getName())) {
+            boolean useAlias = false;
+            for(String alias : command.getAliases()) {
+                if(parts[0].equalsIgnoreCase(prefix + alias)) {
+                    useAlias = true;
+                    break;
+                }
+            }
+            if(!useAlias && !parts[0].equalsIgnoreCase(prefix + command.getName())) {
                 continue;
             }
 

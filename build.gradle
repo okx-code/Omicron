@@ -18,7 +18,7 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile 'net.dv8tion:JDA:+'
-    compile 'com.sedmelluq:lavaplayer:1.2.45'
+    compile 'com.sedmelluq:lavaplayer:+'
     compile 'commons-io:commons-io:+'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '+'
     compile group: 'org.apache.commons', name: 'commons-text', version: '+'

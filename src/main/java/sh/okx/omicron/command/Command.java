@@ -8,12 +8,14 @@ public abstract class Command {
     protected String name;
     protected Category category;
     protected String description;
+    protected String[] aliases;
 
-    public Command(Omicron omicron, String name, Category category, String description) {
+    public Command(Omicron omicron, String name, Category category, String description, String... aliases) {
         this.omicron = omicron;
         this.name = name;
         this.category = category;
         this.description = description;
+        this.aliases = aliases;
     }
 
     public final Omicron getOmicron() {
@@ -22,6 +24,10 @@ public abstract class Command {
 
     public final String getName() {
         return name;
+    }
+
+    public final String[] getAliases() {
+        return aliases;
     }
 
     public final Category getCategory() {

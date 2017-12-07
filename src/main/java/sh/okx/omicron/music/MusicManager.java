@@ -79,6 +79,12 @@ public class MusicManager {
             video = YoutubeAPI.getVideo(resourceId.getVideoId());
         }
 
+        if(video == null) {
+            channel.sendMessage("An unknown error occurred trying to get the video. " +
+                    "This has been reported to the developers.").queue();
+            return;
+        }
+
 
         playerManager.loadItemOrdered(musicManager,
                 "https://youtube.com/watch?v=" + video.getId(), new AudioLoadResultHandler() {

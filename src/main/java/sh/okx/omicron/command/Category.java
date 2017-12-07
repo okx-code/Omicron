@@ -2,7 +2,8 @@ package sh.okx.omicron.command;
 
 public enum Category {
     MISC("Miscellaneous"),
-    MUSIC("Music");
+    MUSIC("Music"),
+    EVAL("Evaluation");
 
     private String string;
 
