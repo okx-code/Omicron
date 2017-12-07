@@ -79,7 +79,7 @@ public class HelpCommand extends Command {
                 eb.addField(category.toString(), description.toString().trim(), false);
             }
 
-            if(guild != null && member.hasPermission(Permission.MANAGE_SERVER)) {
+            if(guild != null && member.hasPermission(Permission.MANAGE_SERVER) && !disabledCommands.isEmpty()) {
                 StringBuilder disabled = new StringBuilder();
                 for (Command disabledCommand : disabledCommands) {
                     disabled.append(prefix).append(disabledCommand.getName()).append("\t");
