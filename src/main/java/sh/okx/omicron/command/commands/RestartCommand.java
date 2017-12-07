@@ -1,9 +1,6 @@
 package sh.okx.omicron.command.commands;
 
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.*;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
@@ -21,7 +18,7 @@ public class RestartCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
+    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
         long id = member.getUser().getIdLong();
         if(!(id == 115090410849828865L || id == 181103798616326144L)) {
             return;

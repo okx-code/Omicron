@@ -16,7 +16,7 @@ public class RoleCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
+    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
         if(!member.hasPermission(Permission.MANAGE_SERVER)) {
             channel.sendMessage("You require permission to manage the server in order to use this command.").queue();
             return;

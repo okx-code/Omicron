@@ -13,7 +13,7 @@ public class JoinCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
+    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
         GuildVoiceState voiceState = member.getVoiceState();
         if(voiceState.inVoiceChannel()) {
             guild.getAudioManager().openAudioConnection(voiceState.getChannel());

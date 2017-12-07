@@ -1,12 +1,12 @@
 package sh.okx.omicron.feed;
 
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.MessageChannel;
 
 public abstract class FeedListener {
     protected String prefix;
-    protected TextChannel channel;
+    protected MessageChannel channel;
 
-    public FeedListener(String prefix, TextChannel channel) {
+    public FeedListener(String prefix, MessageChannel channel) {
         this.prefix = prefix;
         this.channel = channel;
     }

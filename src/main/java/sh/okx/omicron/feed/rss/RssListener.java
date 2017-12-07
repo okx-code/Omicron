@@ -4,13 +4,13 @@ import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.feed.synd.SyndPerson;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.MessageChannel;
 import sh.okx.omicron.util.Util;
 
 import java.util.List;
 
 public class RssListener extends AbstractRssListener {
-    public RssListener(String prefix, TextChannel channel) {
+    public RssListener(String prefix, MessageChannel channel) {
         super(prefix, channel);
     }
 

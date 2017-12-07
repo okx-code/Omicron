@@ -1,9 +1,6 @@
 package sh.okx.omicron.music.commands;
 
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.*;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
@@ -18,7 +15,12 @@ public class PlayCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
-        omicron.getMusicManager().loadAndPlay(member, channel, content);
+    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+        if(guild == null) {
+            channel.sendMessage("This must be used in a guild!").queue();
+            return;
+        }
+
+        omicron.getMusicManager().loadAndPlay(member, (TextChannel) channel, content);
     }
 }

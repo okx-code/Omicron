@@ -3,10 +3,7 @@ package sh.okx.omicron.music.commands;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.*;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
@@ -23,7 +20,7 @@ public class QueueCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
+    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
         GuildMusicManager musicManager = omicron.getMusicManager().getGuildAudioPlayer(guild);
 
         EmbedBuilder eb = new EmbedBuilder();

@@ -2,10 +2,7 @@
 package sh.okx.omicron.feed;
 
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.*;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
@@ -26,7 +23,7 @@ public class FeedCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
+    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
         if(!member.hasPermission(Permission.MESSAGE_MANAGE)) {
             channel.sendMessage("You must have the manage messages permission to use this command.").queue();
             return;

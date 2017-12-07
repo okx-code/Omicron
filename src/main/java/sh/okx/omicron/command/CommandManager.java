@@ -54,7 +54,7 @@ public class CommandManager extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent e) {
-        if(e.getMember() == null || e.getMember().getUser() == null || e.getMember().getUser().isBot()) {
+        if(e.getAuthor().isBot()) {
             return;
         }
 
@@ -68,7 +68,7 @@ public class CommandManager extends ListenerAdapter {
                 continue;
             }
 
-            command.run(e.getGuild(), e.getTextChannel(), e.getMember(), e.getMessage(),
+            command.run(e.getGuild(), e.getChannel(), e.getMember(), e.getMessage(),
                     parts.length > 1 ? parts[1] : "");
             return;
         }

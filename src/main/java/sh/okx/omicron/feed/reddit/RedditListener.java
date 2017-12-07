@@ -3,12 +3,12 @@ package sh.okx.omicron.feed.reddit;
 import net.dean.jraw.fluent.SubredditReference;
 import net.dean.jraw.models.Submission;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.MessageChannel;
 import org.apache.commons.text.StringEscapeUtils;
 import sh.okx.omicron.util.Util;
 
 public class RedditListener extends AbstractRedditListener {
-    public RedditListener(String prefix, TextChannel channel) {
+    public RedditListener(String prefix, MessageChannel channel) {
         super(prefix, channel);
     }
 

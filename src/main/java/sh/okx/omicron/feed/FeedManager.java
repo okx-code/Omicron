@@ -1,5 +1,6 @@
 package sh.okx.omicron.feed;
 
+import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.TextChannel;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.feed.reddit.RedditHandler;
@@ -123,7 +124,7 @@ public class FeedManager {
      * @param content
      * @throws MalformedURLException
      */
-    public void addFeed(String prefix, FeedType type, TextChannel channel, String content) throws MalformedURLException {
+    public void addFeed(String prefix, FeedType type, MessageChannel channel, String content) throws MalformedURLException {
         new Thread(() -> {
             try {
                 Connection connection = omicron.getConnection();
@@ -155,7 +156,7 @@ public class FeedManager {
      * @param content Data the feed handler may use
      * @throws MalformedURLException
      */
-    public void loadFeed(String prefix, FeedType type, TextChannel channel, String content) throws MalformedURLException {
+    public void loadFeed(String prefix, FeedType type, MessageChannel channel, String content) throws MalformedURLException {
         prefix = prefix.replace("<everyone>", "@everyone");
 
         FeedHandler handler;

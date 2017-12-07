@@ -2,10 +2,7 @@ package sh.okx.omicron.music.commands;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.*;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
@@ -24,7 +21,7 @@ public class SkipCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, TextChannel channel, Member member, Message message, String content) {
+    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
         if(member.hasPermission(Permission.MANAGE_CHANNEL)) {
             AudioTrack playing = omicron.getMusicManager().getPlaying(guild);
             if(playing == null) {

@@ -3,6 +3,7 @@ package sh.okx.omicron.feed.youtube;
 import com.google.api.services.youtube.model.ResourceId;
 import com.google.api.services.youtube.model.SearchResultSnippet;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.TextChannel;
 import sh.okx.omicron.util.Util;
 
@@ -10,7 +11,7 @@ import java.time.Instant;
 
 public class YoutubeListener extends AbstractYoutubeListener {
 
-    public YoutubeListener(String prefix, TextChannel channel) {
+    public YoutubeListener(String prefix, MessageChannel channel) {
         super(prefix, channel);
     }
 
