@@ -6,7 +6,6 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
 import org.apache.commons.io.IOUtils;
-import sh.okx.omicron.Omicron;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,7 +76,7 @@ public class YoutubeAPI {
             // Define the API request for retrieving search results.
             YouTube.Videos.List videos = youtube.videos().list("id,snippet");
 
-            videos.setKey(IOUtils.toString(Omicron.class.getResourceAsStream("/google_api_key.txt"), "UTF-8"));
+            videos.setKey(IOUtils.toString(new File("google_api_key.txt").toURI(), "UTF-8"));
             videos.setId(id);
 
             // Call the API and print results.
