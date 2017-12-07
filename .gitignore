@@ -3,8 +3,8 @@
 .gradle/
 .idea/
 build/
-token.txt
-db_password.txt
-google_api_key.txt
-reddit_authentication.txt
-data.json
+/token.txt
+/db_password.txt
+/google_api_key.txt
+/reddit_authentication.txt
+/data.json

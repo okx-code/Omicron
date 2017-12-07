@@ -2,7 +2,6 @@ group 'sh.okx'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
-apply plugin: 'java-library'
 apply plugin: 'application'
 
 mainClassName = 'sh.okx.omicron.Omicron'

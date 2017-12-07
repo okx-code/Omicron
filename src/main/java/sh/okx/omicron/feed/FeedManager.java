@@ -117,7 +117,7 @@ public class FeedManager {
 
     /**
      * Adds a feed to the SQL database and then loads it
-     * @see FeedManager#loadFeed(String, FeedType, TextChannel, String)
+     * @see FeedManager#loadFeed(String, FeedType, MessageChannel, String)
      * @param prefix
      * @param type
      * @param channel
