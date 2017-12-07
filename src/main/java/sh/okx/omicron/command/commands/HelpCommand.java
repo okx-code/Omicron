@@ -2,6 +2,7 @@
 package sh.okx.omicron.command.commands;
 
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
@@ -9,6 +10,9 @@ import net.dv8tion.jda.core.entities.MessageChannel;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class HelpCommand extends Command {
     public HelpCommand(Omicron omicron) {
@@ -56,9 +60,15 @@ public class HelpCommand extends Command {
             eb.setFooter("Use " + prefix + name + " <command> to get help with a specific command, eg " +
                     prefix + name + " feed.", null);
 
+            Set<Command> disabledCommands = new HashSet<>();
             for(Category category : Category.values()) {
                 StringBuilder description = new StringBuilder();
                 for(Command command : commands) {
+                    if(guild != null && omicron.getCommandManager().isDisabled(guild.getIdLong(), command)) {
+                        disabledCommands.add(command);
+                        continue;
+                    }
+
                     if(command.getCategory() != category) {
                         continue;
                     }
@@ -67,6 +77,14 @@ public class HelpCommand extends Command {
                 }
 
                 eb.addField(category.toString(), description.toString().trim(), false);
+            }
+
+            if(guild != null && member.hasPermission(Permission.MANAGE_SERVER)) {
+                StringBuilder disabled = new StringBuilder();
+                for (Command disabledCommand : disabledCommands) {
+                    disabled.append(prefix).append(disabledCommand.getName()).append("\t");
+                }
+                eb.addField("Disabled", disabled.toString().trim(), false);
             }
 
         }

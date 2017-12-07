@@ -27,7 +27,7 @@ public class EnableCommand extends Command {
             channel.sendMessage("This must be run in a guild!").queue();
             return;
         }
-        if(member.hasPermission(Permission.MANAGE_SERVER)) {
+        if(!member.hasPermission(Permission.MANAGE_SERVER)) {
             channel.sendMessage("You need manage server permission to run this command!").queue();
             return;
         }
@@ -49,7 +49,7 @@ public class EnableCommand extends Command {
         }
 
         String name = disableCommand.getName().toLowerCase();
-        if(name.equals("disable") || name.equals("enable")) {
+        if(name.equals("disable") || name.equals("enable") || name.equals("help")) {
             channel.sendMessage("That command cannot be disabled!").queue();
             return;
         }
