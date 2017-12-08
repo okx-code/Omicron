@@ -19,8 +19,7 @@ public class RestartCommand extends Command {
 
     @Override
     public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
-        long id = member.getUser().getIdLong();
-        if(!(id == 115090410849828865L || id == 181103798616326144L)) {
+        if(!omicron.isDeveloper(message.getAuthor().getIdLong())) {
             return;
         }
 

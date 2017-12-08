@@ -80,6 +80,10 @@ public class Omicron {
         }
     }
 
+    public boolean isDeveloper(long id) {
+        return id == 115090410849828865L || id == 181103798616326144L;
+    }
+
     /**
      * This is the recommended way to get a JDA object
      * @return A copy of the JDA object
