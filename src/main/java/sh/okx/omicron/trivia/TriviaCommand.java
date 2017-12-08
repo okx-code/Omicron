@@ -137,7 +137,7 @@ public class TriviaCommand extends Command {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Categories", null);
 
-        eb.setDescription(String.join("\n", categories.keySet()));
+        eb.setDescription(String.join("\t", categories.keySet()));
 
         channel.sendMessage(eb.build()).queue();
     }
