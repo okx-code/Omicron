@@ -124,14 +124,13 @@ public class TriviaCommand extends Command {
                 .collect(Collectors.toList());
         eb.addField("Answers", StringEscapeUtils.unescapeHtml4(String.join("\n", displayedAnswers)), false);
 
-        channel.sendMessage(eb.build()).queue((x) -> {
-            String correct = "\uD83C" + (char) (0xDDE6 + answers.indexOf(results.getString("correct_answer")));
-            omicron.getTriviaManager().addAnswer(x.getId(), correct);
+        Message trivia = channel.sendMessage(eb.build()).complete();
+        String correct = "\uD83C" + (char) (0xDDE6 + answers.indexOf(results.getString("correct_answer")));
+        omicron.getTriviaManager().addAnswer(trivia.getIdLong(), correct);
 
-            for(int i = 0; i < answers.size(); i++) {
-                x.addReaction("\uD83C" + (char) (0xDDE6 + i)).complete();
-            }
-        });
+        for(int i = 0; i < answers.size(); i++) {
+            trivia.addReaction("\uD83C" + (char) (0xDDE6 + i)).queue();
+        }
     }
 
     private void sendCategories(MessageChannel channel) {

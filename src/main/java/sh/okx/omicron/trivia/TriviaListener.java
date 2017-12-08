@@ -18,7 +18,7 @@ public class TriviaListener extends ListenerAdapter {
             return;
         }
 
-        String answer = omicron.getTriviaManager().getAnswer(e.getMessageId());
+        String answer = omicron.getTriviaManager().getAnswer(e.getMessageIdLong());
         if(answer == null) {
             return;
         }
@@ -33,6 +33,6 @@ public class TriviaListener extends ListenerAdapter {
                     "The correct answer was **" + letter + "**.").queue();
         }
 
-        omicron.getTriviaManager().removeAnswer(e.getMessageId());
+        omicron.getTriviaManager().removeAnswer(e.getMessageIdLong());
     }
 }

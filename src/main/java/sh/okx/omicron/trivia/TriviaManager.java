@@ -8,7 +8,7 @@ import java.util.Map;
 public class TriviaManager {
     private Omicron omicron;
 
-    private Map<String, String> answers = new HashMap<>();
+    private Map<Long, String> answers = new HashMap<>();
 
     public TriviaManager(Omicron omicron) {
         this.omicron = omicron;
@@ -16,15 +16,15 @@ public class TriviaManager {
         omicron.getJDA().addEventListener(new TriviaListener(omicron));
     }
 
-    public void addAnswer(String id, String answer) {
-        answers.put(id, answer);
+    public void addAnswer(long message, String answer) {
+        answers.put(message, answer);
     }
 
-    public String getAnswer(String id) {
-        return answers.get(id);
+    public String getAnswer(long message) {
+        return answers.get(message);
     }
 
-    public void removeAnswer(String id) {
-        answers.remove(id);
+    public void removeAnswer(long message) {
+        answers.remove(message);
     }
 }
