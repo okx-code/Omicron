@@ -7,6 +7,7 @@ import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import org.apache.commons.io.IOUtils;
+import sh.okx.omicron.alias.AliasManager;
 import sh.okx.omicron.command.CommandManager;
 import sh.okx.omicron.custom.CustomManager;
 import sh.okx.omicron.evaluate.EvaluateManager;
@@ -56,6 +57,7 @@ public class Omicron {
     private RoleManager roleManager;
     private CustomManager customManager;
     private EvaluateManager evaluateManager;
+    private AliasManager aliasManager;
 
     public Omicron(JDA jda) throws IOException {
         this.sqlPassword = IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim();
@@ -68,6 +70,7 @@ public class Omicron {
         this.roleManager = new RoleManager(this);
         this.customManager = new CustomManager(this);
         this.evaluateManager = new EvaluateManager();
+        this.aliasManager = new AliasManager(this);
     }
 
     public Connection getConnection() {
@@ -118,5 +121,9 @@ public class Omicron {
 
     public EvaluateManager getEvaluateManager() {
         return evaluateManager;
+    }
+
+    public AliasManager getAliasManager() {
+        return aliasManager;
     }
 }

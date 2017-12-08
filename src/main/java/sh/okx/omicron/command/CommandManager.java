@@ -3,6 +3,7 @@ package sh.okx.omicron.command;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import sh.okx.omicron.Omicron;
+import sh.okx.omicron.alias.AliasCommand;
 import sh.okx.omicron.command.commands.*;
 import sh.okx.omicron.custom.CustomCommand;
 import sh.okx.omicron.evaluate.commands.NodeJsCommand;
@@ -46,6 +47,7 @@ public class CommandManager extends ListenerAdapter {
                 new NodeJsCommand(omicron),
                 new DisableCommand(omicron),
                 new EnableCommand(omicron),
+                new AliasCommand(omicron),
         };
         this.prefix = prefix;
         this.omicron = omicron;
