@@ -7,13 +7,12 @@ import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import org.apache.commons.io.IOUtils;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPubSub;
 import sh.okx.omicron.alias.AliasManager;
 import sh.okx.omicron.command.CommandManager;
 import sh.okx.omicron.custom.CustomManager;
 import sh.okx.omicron.evaluate.EvaluateManager;
 import sh.okx.omicron.feed.FeedManager;
+import sh.okx.omicron.minecraft.MinecraftManager;
 import sh.okx.omicron.music.MusicManager;
 import sh.okx.omicron.roles.RoleManager;
 import sh.okx.omicron.trivia.TriviaManager;
@@ -49,18 +48,6 @@ public class Omicron {
         new Omicron(jda);
     }
 
-    public void subscribe() {
-        Jedis subscriber = new Jedis("localhost", 6379);
-        subscriber.connect();
-
-        new Thread(() -> subscriber.subscribe(new JedisPubSub() {
-            @Override
-            public void onMessage(String channel, String message) {
-                System.out.println(channel + ": " + message);
-            }
-        }, "token")).start();
-    }
-
     private JDA jda;
     private FeedManager feedManager;
     private TriviaManager triviaManager;
@@ -70,10 +57,9 @@ public class Omicron {
     private CustomManager customManager;
     private EvaluateManager evaluateManager;
     private AliasManager aliasManager;
+    private MinecraftManager minecraftManager;
 
     public Omicron(JDA jda) throws IOException {
-        subscribe();
-
         this.sqlPassword = IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim();
 
         this.jda = jda;
@@ -85,6 +71,7 @@ public class Omicron {
         this.customManager = new CustomManager(this);
         this.evaluateManager = new EvaluateManager();
         this.aliasManager = new AliasManager(this);
+        this.minecraftManager = new MinecraftManager(this);
     }
 
     public Connection getConnection() {
@@ -139,5 +126,9 @@ public class Omicron {
 
     public AliasManager getAliasManager() {
         return aliasManager;
+    }
+
+    public MinecraftManager getMinecraftManager() {
+        return minecraftManager;
     }
 }
