@@ -4,6 +4,8 @@ version '1.0-SNAPSHOT'
 apply plugin: 'java'
 apply plugin: 'application'
 
+compileJava {options.encoding = "UTF-8"}
+
 mainClassName = 'sh.okx.omicron.Omicron'
 
 sourceCompatibility = 1.8
@@ -28,19 +30,4 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:3.9.1'
     compile 'mysql:mysql-connector-java:5.1.37'
     compile 'redis.clients:jedis:2.9.0'
-}
-
-task fatJar(type: Jar) {
-    manifest {
-        attributes 'Main-Class': 'sh.okx.omicron.Omicron'
-    }
-    baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
-
-jar {
-    manifest {
-        attributes('Main-Class' : 'sh.okx.omicron.Omicron')
-    }
 }

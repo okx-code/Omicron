@@ -23,6 +23,6 @@ public class MinecraftCommand extends Command {
             return;
         }
 
-        channel.sendMessage("Your Minecraft username is " + username).queue();
+        channel.sendMessage("Your minecraft username is: " + username).queue();
     }
 }

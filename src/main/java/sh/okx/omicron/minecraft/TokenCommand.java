@@ -19,7 +19,7 @@ public class TokenCommand extends Command {
     public TokenCommand(Omicron omicron) {
         super(omicron, "token", Category.MISC,
                 "Link your discord account with your Minecraft account." +
-                        "Connect to `mc.okx.sh* to get a token and do " +
+                        "Connect to `mc.okx.sh` to get a token and do " +
                         "**o/token <token>** to verify your Minecraft account.");
 
         subscribe();
