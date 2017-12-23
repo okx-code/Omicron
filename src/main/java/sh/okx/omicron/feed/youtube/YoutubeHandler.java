@@ -69,8 +69,6 @@ public class YoutubeHandler implements FeedHandler {
                     lastChecked = results.get(0).getSnippet().getPublishedAt().getValue();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    this.cancel();
-                    cancelled = true;
                 }
             }
         };

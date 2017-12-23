@@ -99,9 +99,7 @@ public class RedditHandler implements FeedHandler {
                     }
                     lastChecked = fetch.get(0).getCreated().toInstant().toEpochMilli();
                 } catch(Exception ex) {
-                    cancelled = true;
                     ex.printStackTrace();
-                    this.cancel();
                 }
             }
         };

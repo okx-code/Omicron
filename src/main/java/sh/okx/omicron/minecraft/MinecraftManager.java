@@ -12,7 +12,7 @@ public class MinecraftManager {
 
         new Thread(() -> {
             try(Connection connection = omicron.getConnection(); Statement statement = connection.createStatement()) {
-                statement.execute("CREATE TABLE IF NOT EXISTS minecraft (user BIGINT(20) UNIQUE KEY, mc VARCHAR(20) UNIQUE);");
+                statement.execute("CREATE TABLE IF NOT EXISTS minecraft (user BIGINT(20) UNIQUE KEY, uuid VARCHAR(36) UNIQUE);");
 
                 System.out.println("Loaded Minecraft.");
             } catch(SQLException ex) {
