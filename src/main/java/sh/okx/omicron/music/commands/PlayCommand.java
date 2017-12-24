@@ -15,11 +15,14 @@ public class PlayCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
-        if(guild == null) {
-            channel.sendMessage("This must be used in a guild!").queue();
+    public void run(Message message, String content) {
+        MessageChannel channel = message.getChannel();
+        if(message.getChannelType() != ChannelType.TEXT) {
+            channel.sendMessage("This must be run in a guild!").queue();
             return;
         }
+
+        Member member = message.getMember();
 
         omicron.getMusicManager().loadAndPlay(member, (TextChannel) channel, content);
     }

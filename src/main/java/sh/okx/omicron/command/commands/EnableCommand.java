@@ -1,10 +1,7 @@
 package sh.okx.omicron.command.commands;
 
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.*;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
@@ -18,7 +15,16 @@ public class EnableCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+    public void run(Message message, String content) {
+        MessageChannel channel = message.getChannel();
+        if(message.getChannelType() != ChannelType.TEXT) {
+            channel.sendMessage("This command must be run in a guild.").queue();
+            return;
+        }
+
+        Guild guild = message.getGuild();
+        Member member = message.getMember();
+
         if(content.isEmpty()) {
             channel.sendMessage("Usage: **o/enable <command>**").queue();
             return;
@@ -54,13 +60,17 @@ public class EnableCommand extends Command {
             return;
         }
 
-        long guildId = guild.getIdLong();
-        if(!commandManager.isDisabled(guildId, disableCommand)) {
-            channel.sendMessage("That command is not disabled!").queue();
-            return;
-        }
+        final Command lambdaDisableCommand = disableCommand;
 
-        commandManager.setDisabled(disableCommand, guildId, false);
-        channel.sendMessage("Enabled command: " + disableCommand.getName()).queue();
+        long guildId = guild.getIdLong();
+        commandManager.isDisabled(guildId, disableCommand).thenAccept(b -> {
+            if(!b) {
+                channel.sendMessage("That command is not disabled!").queue();
+                return;
+            }
+
+            commandManager.setDisabled(lambdaDisableCommand, guildId, false);
+            channel.sendMessage("Enabled command: " + lambdaDisableCommand.getName()).queue();
+        });
     }
 }

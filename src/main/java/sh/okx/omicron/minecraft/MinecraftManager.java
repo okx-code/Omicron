@@ -1,8 +1,10 @@
 package sh.okx.omicron.minecraft;
 
 import sh.okx.omicron.Omicron;
+import sh.okx.sql.api.SqlException;
 
 import java.sql.*;
+import java.util.concurrent.CompletableFuture;
 
 public class MinecraftManager {
     private Omicron omicron;
@@ -10,45 +12,46 @@ public class MinecraftManager {
     public MinecraftManager(Omicron omicron) {
         this.omicron = omicron;
 
-        new Thread(() -> {
-            try(Connection connection = omicron.getConnection(); Statement statement = connection.createStatement()) {
-                statement.execute("CREATE TABLE IF NOT EXISTS minecraft (user BIGINT(20) UNIQUE KEY, uuid VARCHAR(36) UNIQUE);");
-
-                System.out.println("Loaded Minecraft.");
-            } catch(SQLException ex) {
-                ex.printStackTrace();
-            }
-        }).start();
+        omicron.getConnection().table("minecraft")
+                .create()
+                .ifNotExists()
+                .column("user BIGINT(20) UNIQUE KEY")
+                .column("uuid VARCHAR(36) UNIQUE")
+                .executeAsync()
+                .thenAccept(i -> omicron.getLogger().info("Loaded Minecraft with status {}", i));
     }
 
-    public String getUsername(long id) {
-        try (Connection connection = omicron.getConnection();
-             PreparedStatement statement = connection.prepareStatement("SELECT mc FROM minecraft WHERE user=?")) {
-            statement.setLong(1, id);
-
-            ResultSet rs = statement.executeQuery();
-            if(!rs.next()) {
-                return null;
-            }
-
-            return rs.getString("mc");
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
-        }
+    public CompletableFuture<String> getUsername(long id) {
+        return omicron.getConnection()
+                .table("minecraft")
+                .select("mc")
+                .where().prepareEquals("user", id)
+                .then().executeAsync()
+                .thenApply(rs -> {
+                    if(!rs.next()) {
+                        return null;
+                    }
+                    try {
+                        return rs.getResultSet().getString("mc");
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                });
     }
 
     public void setUsername(long id, String mc) {
-        new Thread(() -> {
-            try (Connection connection = omicron.getConnection();
-                 PreparedStatement statement = connection.prepareStatement("REPLACE INTO minecraft (user, mc) VALUES (?, ?);")) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                PreparedStatement statement = omicron.getConnection().getUnderlying()
+                        .prepareStatement("REPLACE INTO minecraft (user, mc) VALUES (?, ?);");
                 statement.setLong(1, id);
                 statement.setString(2, mc);
 
                 statement.execute();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+            } catch(SQLException ex) {
+                throw new SqlException(ex);
             }
-        }).start();
+        });
     }
 }

@@ -61,7 +61,7 @@ public class MemberPermission {
     }
 
     public static MemberPermission fromLong(JDA jda, long value) {
-        if(value < 0) {
+        if(value < 1) {
             return new MemberPermission();
         }
 

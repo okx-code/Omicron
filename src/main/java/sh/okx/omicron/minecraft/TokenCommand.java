@@ -1,7 +1,5 @@
 package sh.okx.omicron.minecraft;
 
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import redis.clients.jedis.Jedis;
@@ -39,7 +37,9 @@ public class TokenCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+    public void run(Message message, String content) {
+        MessageChannel channel = message.getChannel();
+
         if(content.isEmpty()) {
             channel.sendMessage(description).queue();
             return;

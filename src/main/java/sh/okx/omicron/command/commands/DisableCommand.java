@@ -1,10 +1,7 @@
 package sh.okx.omicron.command.commands;
 
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.*;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
@@ -18,7 +15,16 @@ public class DisableCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+    public void run(Message message, String content) {
+        MessageChannel channel = message.getChannel();
+        if(message.getChannelType() != ChannelType.TEXT) {
+            channel.sendMessage("This command must be run in a guild.").queue();
+            return;
+        }
+
+        Guild guild = message.getGuild();
+        Member member = message.getMember();
+
         if(content.isEmpty()) {
             channel.sendMessage("Usage: **o/disable <command>**").queue();
             return;
@@ -48,19 +54,25 @@ public class DisableCommand extends Command {
             return;
         }
 
+
         String name = disableCommand.getName().toLowerCase();
         if(name.equals("disable") || name.equals("enable") || name.equals("help")) {
             channel.sendMessage("That command cannot be disabled!").queue();
             return;
         }
 
+        final Command lambdaDisableCommand = disableCommand;
         long guildId = guild.getIdLong();
-        if(commandManager.isDisabled(guildId, disableCommand)) {
-            channel.sendMessage("That command is already disabled! Use **o/enable** to re-enable it.").queue();
-            return;
-        }
 
-        commandManager.setDisabled(disableCommand, guildId, true);
-        channel.sendMessage("Disabled command: " + disableCommand.getName()).queue();
+        commandManager.isDisabled(guildId, disableCommand)
+                .thenAccept(disabled -> {
+                    if(disabled) {
+                        channel.sendMessage("That command is already disabled! " +
+                                "Use **o/enable** to re-enable it.").queue();
+                    } else {
+                        commandManager.setDisabled(lambdaDisableCommand, guildId, true);
+                        channel.sendMessage("Disabled command: " + lambdaDisableCommand.getName()).queue();
+                    }
+                });
     }
 }

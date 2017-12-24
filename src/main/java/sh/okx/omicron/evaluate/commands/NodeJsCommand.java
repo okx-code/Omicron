@@ -1,7 +1,5 @@
 package sh.okx.omicron.evaluate.commands;
 
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import sh.okx.omicron.Omicron;
@@ -18,7 +16,8 @@ public class NodeJsCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+    public void run(Message message, String content) {
+        MessageChannel channel = message.getChannel();
         if(content.isEmpty()) {
             channel.sendMessage("Usage: **o/nodejs <command(s)>**").queue();
             return;

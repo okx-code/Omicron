@@ -58,7 +58,9 @@ public class TriviaCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+    public void run(Message message, String content) {
+        MessageChannel channel = message.getChannel();
+
         if(content.equalsIgnoreCase("categories")) {
             sendCategories(channel);
             return;
@@ -81,12 +83,12 @@ public class TriviaCommand extends Command {
             query += "&category=" + category;
         }
 
-        String response = null;
+        String response;
         try {
             response = IOUtils.toString(new URL("https://opentdb.com/api.php?" + query), "UTF-8");
         } catch (IOException e) {
             e.printStackTrace();
-            channel.sendMessage("An unknown error occured when trying to get a trivia question.");
+            channel.sendMessage("An unknown error occured when trying to get a trivia question.").queue();
             return;
         }
 

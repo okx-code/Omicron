@@ -14,8 +14,14 @@ public class LoopCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
-        TrackScheduler scheduler = omicron.getMusicManager().getGuildAudioPlayer(guild).scheduler;
+    public void run(Message message, String content) {
+        MessageChannel channel = message.getChannel();
+        if(message.getChannelType() != ChannelType.TEXT) {
+            channel.sendMessage("This must be run in a guild!").queue();
+            return;
+        }
+
+        TrackScheduler scheduler = omicron.getMusicManager().getGuildAudioPlayer(message.getGuild()).scheduler;
         if(scheduler.isLooping()) {
             channel.sendMessage("Cancelled looping.").queue();
         } else {

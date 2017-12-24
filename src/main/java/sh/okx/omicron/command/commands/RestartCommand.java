@@ -18,11 +18,12 @@ public class RestartCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+    public void run(Message message, String content) {
         if(!omicron.isDeveloper(message.getAuthor().getIdLong())) {
             return;
         }
 
+        MessageChannel channel = message.getChannel();
         try {
             channel.sendMessage("Pulling from git and shutting down...").complete();
             Runtime.getRuntime().exec("./start.sh &");
@@ -34,6 +35,7 @@ public class RestartCommand extends Command {
             System.exit(0);
         } catch (IOException e) {
             e.printStackTrace();
+            channel.sendMessage("An error occurred while attempting to restart.").queue();
         }
     }
 }

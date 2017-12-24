@@ -18,7 +18,16 @@ public class RemoveCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+    public void run(Message message, String content) {
+        MessageChannel channel = message.getChannel();
+        if(message.getChannelType() != ChannelType.TEXT) {
+            channel.sendMessage("This must be run in a guild!").queue();
+            return;
+        }
+
+        Guild guild = message.getGuild();
+        Member member = message.getMember();
+
         List<TrackData> queue = omicron.getMusicManager().getGuildAudioPlayer(guild).scheduler.getQueue();
 
         int index;

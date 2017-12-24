@@ -16,13 +16,21 @@ public class RoleCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+    public void run(Message message, String args) {
+        MessageChannel channel = message.getChannel();
+        if(message.getChannelType() != ChannelType.TEXT) {
+            channel.sendMessage("This command must be run in a guild.").queue();
+            return;
+        }
+
+        Member member = message.getMember();
         if(!member.hasPermission(Permission.MANAGE_SERVER)) {
             channel.sendMessage("You require permission to manage the server in order to use this command.").queue();
             return;
         }
 
-        String[] parts = content.split(" ", 2);
+        Guild guild = message.getGuild();
+        String[] parts = args.split(" ", 2);
         if(parts.length > 0) {
             if (parts[0].equalsIgnoreCase("default")) {
                 if(!guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
@@ -59,27 +67,30 @@ public class RoleCommand extends Command {
                 channel.sendMessage("Set the default role to this guild to: " + role.getName()).queue();
                 return;
             } else if (parts[0].equalsIgnoreCase("get")) {
-                if(!omicron.getRoleManager().hasDefaultRole(guild.getIdLong())) {
-                    channel.sendMessage("There is no default role set for this guild.").queue();
-                    return;
-                }
+                omicron.getRoleManager().hasDefaultRole(guild.getIdLong()).thenAccept(b -> {
+                    if(!b) {
+                        channel.sendMessage("There is no default role set for this guild.").queue();
+                        return;
+                    }
 
-                long defaultRoleId = omicron.getRoleManager().getDefaultRole(guild.getIdLong());
-                if(defaultRoleId < 0) {
-                    channel.sendMessage("An unexpected error occured when getting the default role. " +
-                            "This has been reported to the developers.").queue();
-                    return;
-                }
+                    omicron.getRoleManager().getDefaultRole(guild.getIdLong()).thenAccept(defaultRoleId -> {
+                        if (defaultRoleId < 0) {
+                            channel.sendMessage("An unexpected error occured when getting the default role. " +
+                                    "This has been reported to the developers.").queue();
+                            return;
+                        }
 
-                Role role = guild.getRoleById(defaultRoleId);
-                if(role == null) {
-                    channel.sendMessage("The currently default role for this guild is invalid. " +
-                            "It has been deleted.").queue();
-                    omicron.getRoleManager().removeDefaultRole(guild.getIdLong());
-                } else {
-                    channel.sendMessage("The default role for this guild is: " +
-                            guild.getRoleById(defaultRoleId).getName()).queue();
-                }
+                        Role role = guild.getRoleById(defaultRoleId);
+                        if (role == null) {
+                            channel.sendMessage("The currently default role for this guild is invalid. " +
+                                    "It has been deleted.").queue();
+                            omicron.getRoleManager().removeDefaultRole(guild.getIdLong());
+                        } else {
+                            channel.sendMessage("The default role for this guild is: " +
+                                    guild.getRoleById(defaultRoleId).getName()).queue();
+                        }
+                    });
+                });
                 return;
             }
         }

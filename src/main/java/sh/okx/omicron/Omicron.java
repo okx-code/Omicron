@@ -7,6 +7,8 @@ import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sh.okx.omicron.command.CommandManager;
 import sh.okx.omicron.custom.CustomManager;
 import sh.okx.omicron.evaluate.EvaluateManager;
@@ -15,20 +17,16 @@ import sh.okx.omicron.minecraft.MinecraftManager;
 import sh.okx.omicron.music.MusicManager;
 import sh.okx.omicron.roles.RoleManager;
 import sh.okx.omicron.trivia.TriviaManager;
+import sh.okx.sql.ConnectionBuilder;
+import sh.okx.sql.api.Connection;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
 public class Omicron {
-    private final String sqlPassword;
-
     public static void main(String[] args) throws IOException, LoginException,
-            InterruptedException, RateLimitedException, URISyntaxException {
+            InterruptedException, RateLimitedException {
         JDA jda = new JDABuilder(AccountType.BOT)
                 .setToken(IOUtils.toString(new File("token.txt").toURI(), "UTF-8").trim())
                 .setGame(Game.of(Game.GameType.DEFAULT, "o/help"))
@@ -57,10 +55,17 @@ public class Omicron {
     private EvaluateManager evaluateManager;
     private MinecraftManager minecraftManager;
 
-    public Omicron(JDA jda) throws IOException {
-        this.sqlPassword = IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim();
+    private Connection connection;
 
+    public Omicron(JDA jda) throws IOException {
         this.jda = jda;
+
+        this.connection = new ConnectionBuilder()
+                .setCredentials("root",
+                        IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim())
+                .setDatabase("omicron")
+                .build();
+
         this.feedManager = new FeedManager(this);
         this.triviaManager = new TriviaManager(this);
         this.musicManager = new MusicManager(this);
@@ -72,13 +77,15 @@ public class Omicron {
     }
 
     public Connection getConnection() {
-        try {
-            return DriverManager.getConnection("jdbc:mysql://localhost:3306/omicron",
-                    "root", sqlPassword);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return connection;
+    }
+
+    public Logger getLogger() {
+        return LoggerFactory.getLogger(this.getClass());
+    }
+
+    public Logger getLogger(Object o) {
+        return LoggerFactory.getLogger(o.getClass());
     }
 
     public boolean isDeveloper(long id) {

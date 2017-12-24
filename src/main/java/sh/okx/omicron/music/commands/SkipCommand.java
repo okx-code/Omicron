@@ -21,7 +21,16 @@ public class SkipCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+    public void run(Message message, String content) {
+        MessageChannel channel = message.getChannel();
+        if(message.getChannelType() != ChannelType.TEXT) {
+            channel.sendMessage("This must be run in a guild!").queue();
+            return;
+        }
+
+        Member member = message.getMember();
+        Guild guild = member.getGuild();
+
         if(member.hasPermission(Permission.MANAGE_CHANNEL)) {
             AudioTrack playing = omicron.getMusicManager().getPlaying(guild);
             if(playing == null) {

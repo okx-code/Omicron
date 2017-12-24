@@ -1,8 +1,11 @@
 package sh.okx.omicron.roles;
 
 import sh.okx.omicron.Omicron;
+import sh.okx.sql.api.SqlException;
+import sh.okx.sql.api.query.QueryResults;
 
 import java.sql.*;
+import java.util.concurrent.CompletableFuture;
 
 public class RoleManager {
     private Omicron omicron;
@@ -11,47 +14,30 @@ public class RoleManager {
         this.omicron = omicron;
         omicron.getJDA().addEventListener(new RoleListener(omicron));
 
-        new Thread(() -> {
-            try {
-                Connection connection = omicron.getConnection();
-
-                Statement table = connection.createStatement();
-
-                table.execute("CREATE TABLE IF NOT EXISTS roles (guild BIGINT(20), role BIGINT(20) );");
-
-                table.close();
-                connection.close();
-
-                System.out.println("Loaded default roles.");
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }).start();
+        omicron.getConnection()
+                .table("roles")
+                .create()
+                .ifNotExists()
+                .column("guild BIGINT(20)")
+                .column("role BIGINT(20)")
+                .executeAsync()
+                .thenAccept(i -> omicron.getLogger().info("Loaded default roles with status " + i));
     }
 
-    public boolean hasDefaultRole(long guildId) {
-        try {
-            Connection connection = omicron.getConnection();
-
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM roles WHERE guild=?");
-            statement.setLong(1, guildId);
-
-            boolean yes = statement.executeQuery().next();
-
-            statement.close();
-            connection.close();
-
-            return yes;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+    public CompletableFuture<Boolean> hasDefaultRole(long guildId) {
+        return omicron.getConnection()
+                .table("roles")
+                .select()
+                .where().prepareEquals("guild", guildId)
+                .then()
+                .executeAsync()
+                .thenApply(QueryResults::next);
     }
 
     public void setDefaultRole(long guild, long role) {
-        new Thread(() -> {
+        CompletableFuture.runAsync(() -> {
             try {
-                Connection connection = omicron.getConnection();
+                Connection connection = omicron.getConnection().getUnderlying();
 
                 PreparedStatement statement = connection.prepareStatement("REPLACE INTO roles (guild, role) " +
                         "VALUES (?, ?);");
@@ -65,45 +51,35 @@ public class RoleManager {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     public void removeDefaultRole(long guild) {
-        new Thread(() -> {
+        CompletableFuture.runAsync(() -> {
             try {
-                Connection connection = omicron.getConnection();
+                Connection connection = omicron.getConnection().getUnderlying();
 
                 PreparedStatement statement = connection.prepareStatement("DELETE FROM roles WHERE guild=?;");
                 statement.setLong(1, guild);
 
                 statement.execute();
-
-                statement.close();
-                connection.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
-    public long getDefaultRole(long guild) {
-        try {
-            Connection connection = omicron.getConnection();
-
-            PreparedStatement statement = connection.prepareStatement("SELECT role FROM roles WHERE guild=?");
-            statement.setLong(1, guild);
-
-            ResultSet rs = statement.executeQuery();
-            rs.next();
-            long role = rs.getLong("role");
-
-            statement.close();
-            connection.close();
-
-            return role;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return -1;
-        }
+    public CompletableFuture<Long> getDefaultRole(long guild) {
+        return omicron.getConnection().table("roles")
+                .select("role")
+                .where().prepareEquals("guild", guild).then()
+                .executeAsync()
+                .thenApply(qr -> {
+                    try {
+                        return qr.getResultSet().getLong("role");
+                    } catch (SQLException e) {
+                        throw new SqlException(e);
+                    }
+                });
     }
 }

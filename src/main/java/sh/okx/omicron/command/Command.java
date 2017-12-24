@@ -38,5 +38,5 @@ public abstract class Command {
         return description;
     }
 
-    public abstract void run(Guild guild, MessageChannel channel, Member member, Message message, String content);
+    public abstract void run(Message message, String args);
 }

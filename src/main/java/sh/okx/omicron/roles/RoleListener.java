@@ -23,16 +23,19 @@ public class    RoleListener extends ListenerAdapter {
 
         Guild guild = e.getGuild();
 
-        if(!omicron.getRoleManager().hasDefaultRole(guild.getIdLong())) {
-            return;
-        }
+        omicron.getRoleManager().hasDefaultRole(guild.getIdLong()).thenAccept(b -> {
+            if(!b) {
+                return;
+            }
 
-        long defaultRole = omicron.getRoleManager().getDefaultRole(guild.getIdLong());
-        if(defaultRole < 0) {
-            return;
-        }
+            omicron.getRoleManager().getDefaultRole(guild.getIdLong()).thenAccept(defaultRole -> {
+                if(defaultRole < 0) {
+                    return;
+                }
 
-        Role role = omicron.getJDA().getRoleById(defaultRole);
-        guild.getController().addSingleRoleToMember(member, role).queue();
+                Role role = omicron.getJDA().getRoleById(defaultRole);
+                guild.getController().addSingleRoleToMember(member, role).queue();
+            });
+        });
     }
 }

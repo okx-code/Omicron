@@ -3,7 +3,11 @@ package sh.okx.omicron.custom;
 import net.dv8tion.jda.core.entities.Member;
 import sh.okx.omicron.Omicron;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.concurrent.CompletableFuture;
 
 public class CustomManager {
     private Omicron omicron;
@@ -12,29 +16,20 @@ public class CustomManager {
 
         omicron.getJDA().addEventListener(new CustomListener(omicron));
 
-        new Thread(() -> {
-            try {
-                Connection connection = omicron.getConnection();
-
-                Statement statement = connection.createStatement();
-
-                statement.execute("CREATE TABLE IF NOT EXISTS commands (guild BIGINT(20), permission BIGINT(20), " +
-                        "command VARCHAR(255), response TEXT );");
-
-                statement.close();
-                connection.close();
-
-                System.out.println("Loaded custom commands.");
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }).start();
+        omicron.getConnection().table("commands")
+                .create().ifNotExists()
+                .column("guild BIGINT(20)")
+                .column("permission BIGINT(20)")
+                .column("command VARCHAR(255)")
+                .column("response TEXT")
+                .executeAsync()
+                .thenAccept(i -> omicron.getLogger().info("Loaded custom commands with status {}", i));
     }
 
     public void addCommand(CreatedCustomCommand command) {
-        new Thread(() -> {
+        CompletableFuture.runAsync(() -> {
             try {
-                Connection connection = omicron.getConnection();
+                Connection connection = omicron.getConnection().getUnderlying();
 
                 PreparedStatement statement = connection.prepareStatement("REPLACE INTO commands " +
                         "(guild, permission, command, response) VALUES (?, ?, ?, ?)");
@@ -50,13 +45,13 @@ public class CustomManager {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     public void removeCommand(long guild, MemberPermission permission, String command) {
-        new Thread(() -> {
+        CompletableFuture.runAsync(() -> {
             try {
-                Connection connection = omicron.getConnection();
+                Connection connection = omicron.getConnection().getUnderlying();
 
                 PreparedStatement statement = connection.prepareStatement("DELETE FROM commands " +
                         "WHERE guild=? AND permission=? AND command=?");
@@ -71,36 +66,32 @@ public class CustomManager {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
-    public CreatedCustomCommand getCommand(long guild, Member member, String command) {
-        try {
-            Connection connection = omicron.getConnection();
+    public CompletableFuture<CreatedCustomCommand> getCommand(long guild, Member member, String command) {
+        return omicron.getConnection().table("commands").select()
+                .where().prepareEquals("guild", guild).and().prepareEquals("command", command)
+                .then().executeAsync()
+                .thenApply(qr -> {
+                    try {
+                        ResultSet rs = qr.getResultSet();
+                        while (rs.next()) {
+                            MemberPermission permission = MemberPermission.fromLong(omicron.getJDA(), rs.getLong("permission"));
 
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM commands " +
-                    "WHERE guild=? AND command=?");
-            statement.setLong(1, guild);
-            statement.setString(2, command);
+                            if (!permission.hasPermission(member)) {
+                                continue;
+                            }
 
-            ResultSet rs = statement.executeQuery();
-            while(rs.next()) {
-                MemberPermission permission = MemberPermission.fromLong(omicron.getJDA(), rs.getLong("permission"));
-                if(!permission.hasPermission(member)) {
-                    continue;
-                }
-
-                return new CreatedCustomCommand(rs.getLong("guild"),
-                        permission,
-                        rs.getString("command"),
-                        rs.getString("response"));
-            }
-
-            statement.close();
-            connection.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+                            return new CreatedCustomCommand(rs.getLong("guild"),
+                                    permission,
+                                    rs.getString("command"),
+                                    rs.getString("response"));
+                        }
+                    } catch(SQLException ex) {
+                        ex.printStackTrace();
+                    }
+                    return null;
+                });
     }
 }

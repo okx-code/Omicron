@@ -4,7 +4,6 @@ package sh.okx.omicron.command.commands;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import sh.okx.omicron.Omicron;
@@ -13,6 +12,7 @@ import sh.okx.omicron.command.Command;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public class HelpCommand extends Command {
     public HelpCommand(Omicron omicron) {
@@ -20,7 +20,10 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+    public void run(Message message, String content) {
+        Guild guild = message.getGuild();
+        MessageChannel channel = message.getChannel();
+
         String prefix = omicron.getCommandManager().getPrefix();
         content = content.replaceFirst(prefix, "");
 
@@ -55,21 +58,26 @@ public class HelpCommand extends Command {
 
             eb.setTitle("Invalid command");
             eb.setDescription("Cannot find command '" + content + "'.");
-        } else {
+
+            channel.sendMessage(eb.build()).queue();
+            return;
+        }
+
+        CompletableFuture.runAsync(() -> {
             eb.setTitle("Omicron");
             eb.setFooter("Use " + prefix + name + " <command> to get help with a specific command, eg " +
                     prefix + name + " feed.", null);
 
             Set<Command> disabledCommands = new HashSet<>();
-            for(Category category : Category.values()) {
+            for (Category category : Category.values()) {
                 StringBuilder description = new StringBuilder();
-                for(Command command : commands) {
-                    if(guild != null && omicron.getCommandManager().isDisabled(guild.getIdLong(), command)) {
+                for (Command command : commands) {
+                    if (guild != null && omicron.getCommandManager().isDisabled(guild.getIdLong(), command).join()) {
                         disabledCommands.add(command);
                         continue;
                     }
 
-                    if(command.getCategory() != category) {
+                    if (command.getCategory() != category) {
                         continue;
                     }
 
@@ -79,7 +87,7 @@ public class HelpCommand extends Command {
                 eb.addField(category.toString(), description.toString().trim(), false);
             }
 
-            if(guild != null && member.hasPermission(Permission.MANAGE_SERVER) && !disabledCommands.isEmpty()) {
+            if (guild != null && message.getMember().hasPermission(Permission.MANAGE_SERVER) && !disabledCommands.isEmpty()) {
                 StringBuilder disabled = new StringBuilder();
                 for (Command disabledCommand : disabledCommands) {
                     disabled.append(prefix).append(disabledCommand.getName()).append("\t");
@@ -87,7 +95,7 @@ public class HelpCommand extends Command {
                 eb.addField("Disabled", disabled.toString().trim(), false);
             }
 
-        }
-        channel.sendMessage(eb.build()).queue();
+            channel.sendMessage(eb.build()).queue();
+        });
     }
 }

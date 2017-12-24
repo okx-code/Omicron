@@ -50,7 +50,7 @@ public class Util {
         List<Role> mentionedRoles = message.getMentionedRoles();
         if (mentionedRoles.size() > 0) {
             role = mentionedRoles.get(0);
-        } else if (!message.getRawContent().isEmpty()) {
+        } else if (!message.getContentRaw().isEmpty()) {
             return getRole(message.getGuild(), fallback);
         }
 
@@ -92,7 +92,7 @@ public class Util {
         List<User> mentionedUsers = message.getMentionedUsers();
         if (mentionedUsers.size() > 0) {
             return message.getGuild().getMember(mentionedUsers.get(0));
-        } else if (!message.getRawContent().isEmpty()) {
+        } else if (!message.getContentRaw().isEmpty()) {
             return getMember(message.getGuild(), fallback);
         }
         return null;

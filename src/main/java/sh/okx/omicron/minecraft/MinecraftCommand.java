@@ -1,7 +1,5 @@
 package sh.okx.omicron.minecraft;
 
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import sh.okx.omicron.Omicron;
@@ -15,14 +13,17 @@ public class MinecraftCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
-        long id = message.getAuthor().getIdLong();
-        String username = omicron.getMinecraftManager().getUsername(id);
-        if(username == null) {
-            channel.sendMessage("You do not have a Minecraft account linked! Run **o/token** to see how to link one.").queue();
-            return;
-        }
+    public void run(Message message, String content) {
+        MessageChannel channel = message.getChannel();
 
-        channel.sendMessage("Your minecraft username is: " + username).queue();
+        long id = message.getAuthor().getIdLong();
+        omicron.getMinecraftManager().getUsername(id).thenAccept(username -> {
+            if(username == null) {
+                channel.sendMessage("You do not have a Minecraft account linked! Run **o/token** to see how to link one.").queue();
+                return;
+            }
+
+            channel.sendMessage("Your minecraft username is: " + username).queue();
+        });
     }
 }

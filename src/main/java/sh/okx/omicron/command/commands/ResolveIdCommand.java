@@ -15,7 +15,8 @@ public class ResolveIdCommand extends Command {
     }
 
     @Override
-    public void run(Guild commandGuild, MessageChannel channel, Member member, Message message, String content) {
+    public void run(Message message, String content) {
+        MessageChannel channel = message.getChannel();
         if(content.isEmpty()) {
             channel.sendMessage("Usage **o/resolveid <id>**").queue();
             return;

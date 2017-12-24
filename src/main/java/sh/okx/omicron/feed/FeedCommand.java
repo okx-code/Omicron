@@ -23,13 +23,21 @@ public class FeedCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
+    public void run(Message message, String args) {
+        MessageChannel channel = message.getChannel();
+        if(message.getChannelType() != ChannelType.TEXT) {
+            channel.sendMessage("This must be run in a guild.").queue();
+            return;
+        }
+
+        Member member = message.getMember();
+
         if(!member.hasPermission(Permission.MESSAGE_MANAGE)) {
             channel.sendMessage("You must have the manage messages permission to use this command.").queue();
             return;
         }
 
-        String[] parts = content.split(" ", 3);
+        String[] parts = args.split(" ", 3);
         if(parts.length < 2) {
             channel.sendMessage("Usage: **" +
                     omicron.getCommandManager().getPrefix() + name +
@@ -49,18 +57,18 @@ public class FeedCommand extends Command {
             return;
         }
 
-        if(!omicron.getFeedManager().hasFeed(channel.getId(), parts[1])) {
-            try {
-                omicron.getFeedManager().addFeed(parts.length < 3 ? "" : parts[2], type, channel, parts[1]);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                channel.sendMessage("An error occured loading the feed.").queue();
-                return;
+        omicron.getFeedManager().hasFeed(channel.getId(), parts[1]).thenAccept(removed -> {
+            if(removed) {
+                try {
+                    omicron.getFeedManager().addFeed(parts.length < 3 ? "" : parts[2], type, channel, parts[1]);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                    channel.sendMessage("An error occured loading the feed.").queue();
+                }
+            } else {
+                omicron.getFeedManager().removeFeed(channel.getId(), parts[1]);
+                channel.sendMessage("Removed feed from: " + parts[1]).queue();
             }
-            channel.sendMessage("Added feed from: " + parts[1]).queue();
-        } else {
-            omicron.getFeedManager().removeFeed(channel.getId(), parts[1]);
-            channel.sendMessage("Removed feed from: " + parts[1]).queue();
-        }
+        });
     }
 }

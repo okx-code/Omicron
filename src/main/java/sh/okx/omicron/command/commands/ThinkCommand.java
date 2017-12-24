@@ -11,8 +11,8 @@ public class ThinkCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
-        channel.sendMessage(
+    public void run(Message message, String content) {
+        message.getChannel().sendMessage(
            "⠀⠀⠀⠀⠀⢀⣀⣀⣀\n" +
                 "⠀⠀⠀⠰⡿⠿⠛⠛⠻⠿⣷\n" +
                 "⠀⠀⠀⠀⠀⠀⣀⣄⡀⠀⠀⠀⠀⢀⣀⣀⣤⣄⣀⡀\n" +

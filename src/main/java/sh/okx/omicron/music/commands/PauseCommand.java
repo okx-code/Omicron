@@ -13,8 +13,14 @@ public class PauseCommand extends Command {
     }
 
     @Override
-    public void run(Guild guild, MessageChannel channel, Member member, Message message, String content) {
-        GuildMusicManager player = omicron.getMusicManager().getGuildAudioPlayer(guild);
+    public void run(Message message, String content) {
+        MessageChannel channel = message.getChannel();
+        if(message.getChannelType() != ChannelType.TEXT) {
+            channel.sendMessage("This must be run in a guild!").queue();
+            return;
+        }
+
+        GuildMusicManager player = omicron.getMusicManager().getGuildAudioPlayer(message.getGuild());
 
         if(player.scheduler.pause()) {
             channel.sendMessage("Paused music.").queue();
