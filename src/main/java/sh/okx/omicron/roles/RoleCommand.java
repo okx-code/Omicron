@@ -32,10 +32,6 @@ public class RoleCommand extends Command {
         }
 
         Member member = message.getMember();
-        if(!member.hasPermission(Permission.MANAGE_SERVER)) {
-            channel.sendMessage("You require permission to manage the server in order to use this command.").queue();
-            return;
-        }
 
         Guild guild = message.getGuild();
         String[] parts = args.split(" ", 2);
@@ -43,6 +39,11 @@ public class RoleCommand extends Command {
             if (parts[0].equalsIgnoreCase("default")) {
                 if(!guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
                     channel.sendMessage("I require permission to manage roles.").queue();
+                    return;
+                }
+
+                if(!member.hasPermission(Permission.MANAGE_ROLES)) {
+                    channel.sendMessage("You require permission to manage roles in order to use this command.").queue();
                     return;
                 }
 
@@ -117,14 +118,14 @@ public class RoleCommand extends Command {
                 });
                 return;
             } else if(parts[0].equalsIgnoreCase("toggle") && parts.length > 1) {
-                Role role = Util.getRole(message, parts[1]);
-                if(role == null) {
-                    channel.sendMessage("Cannot find role.").queue();
+                if(!member.hasPermission(Permission.MANAGE_ROLES)) {
+                    channel.sendMessage("You need permission to manage roles to use this command!").queue();
                     return;
                 }
 
-                if(!member.hasPermission(Permission.MANAGE_ROLES)) {
-                    channel.sendMessage("You need permission to manage roles to use this command!").queue();
+                Role role = Util.getRole(message, parts[1]);
+                if(role == null) {
+                    channel.sendMessage("Cannot find role.").queue();
                     return;
                 }
 
