@@ -72,8 +72,8 @@ public class RoleCommand extends Command {
                                         "It has been deleted.").queue();
                                 omicron.getRoleManager().removeDefaultRole(guild.getIdLong());
                             } else {
-                                channel.sendMessage("The default role for this guild is: " +
-                                        guild.getRoleById(defaultRoleId).getName()).queue();
+                                channel.sendMessage("The default role for this guild is **" +
+                                        guild.getRoleById(defaultRoleId).getName() + "**").queue();
                             }
                         });
                     });
@@ -100,7 +100,7 @@ public class RoleCommand extends Command {
                 }
 
                 omicron.getRoleManager().setDefaultRole(guild.getIdLong(), role.getIdLong());
-                channel.sendMessage("Set the default role to this guild to: " + role.getName()).queue();
+                channel.sendMessage("Set the default role to this guild to **" + role.getName() + "**").queue();
                 return;
             } else if(parts[0].equalsIgnoreCase("list")) {
                 omicron.getRoleManager().getFreeRoles(guild.getIdLong()).thenAccept(freeRoles -> {

@@ -68,7 +68,7 @@ public class MusicManager {
 
 
         Video video;
-        if(trackUrl.matches("https?://(www\\.)?youtube.com/watch\\?v=[A-z0-9\\-_]+")) {
+        if(trackUrl.matches("https?://(www\\.)?youtube\\.com/watch\\?v=[A-z0-9\\-_]+(&.*)?")) {
             video = YoutubeAPI.getVideo(trackUrl.split("\\?v=")[1]);
         } else {
             ResourceId resourceId = YoutubeAPI.search(trackUrl);
