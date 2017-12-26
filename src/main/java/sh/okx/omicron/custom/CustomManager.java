@@ -16,32 +16,27 @@ public class CustomManager {
 
         omicron.getJDA().addEventListener(new CustomListener(omicron));
 
-        omicron.getConnection().table("commands")
+        omicron.runConnectionAsync(connection -> connection.table("commands")
                 .create().ifNotExists()
                 .column("guild BIGINT(20)")
                 .column("permission BIGINT(20)")
                 .column("command VARCHAR(255)")
                 .column("response TEXT")
                 .executeAsync()
-                .thenAccept(i -> omicron.getLogger().info("Loaded custom commands with status {}", i));
+                .thenAccept(i -> omicron.getLogger().info("Loaded custom commands with status {}", i)));
     }
 
     public void addCommand(CreatedCustomCommand command) {
         CompletableFuture.runAsync(() -> {
-            try {
-                Connection connection = omicron.getConnection().getUnderlying();
-
-                PreparedStatement statement = connection.prepareStatement("REPLACE INTO commands " +
-                        "(guild, permission, command, response) VALUES (?, ?, ?, ?)");
+            try(Connection connection = omicron.getConnection().getUnderlying();
+                PreparedStatement statement = connection.prepareStatement(
+                        "REPLACE INTO commands (guild, permission, command, response) VALUES (?, ?, ?, ?)")) {
                 statement.setLong(1, command.getGuildId());
                 statement.setLong(2, command.getPermission().toLong());
                 statement.setString(3, command.getCommand());
                 statement.setString(4, command.getResponse());
 
                 statement.execute();
-
-                statement.close();
-                connection.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -50,19 +45,14 @@ public class CustomManager {
 
     public void removeCommand(long guild, MemberPermission permission, String command) {
         CompletableFuture.runAsync(() -> {
-            try {
-                Connection connection = omicron.getConnection().getUnderlying();
-
-                PreparedStatement statement = connection.prepareStatement("DELETE FROM commands " +
-                        "WHERE guild=? AND permission=? AND command=?");
+            try(Connection connection = omicron.getConnection().getUnderlying();
+                 PreparedStatement statement = connection.prepareStatement(
+                         "DELETE FROM commands WHERE guild=? AND permission=? AND command=?")) {
                 statement.setLong(1, guild);
                 statement.setLong(2, permission.toLong());
                 statement.setString(3, command);
 
                 statement.execute();
-
-                statement.close();
-                connection.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -70,7 +60,7 @@ public class CustomManager {
     }
 
     public CompletableFuture<CreatedCustomCommand> getCommand(long guild, Member member, String command) {
-        return omicron.getConnection().table("commands").select()
+        return omicron.runConnectionAsync(connection -> connection.table("commands").select()
                 .where().prepareEquals("guild", guild).and().prepareEquals("command", command)
                 .then().executeAsync()
                 .thenApply(qr -> {
@@ -92,6 +82,6 @@ public class CustomManager {
                         ex.printStackTrace();
                     }
                     return null;
-                });
+                }));
     }
 }

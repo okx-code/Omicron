@@ -12,18 +12,19 @@ public class MinecraftManager {
     public MinecraftManager(Omicron omicron) {
         this.omicron = omicron;
 
-        omicron.getConnection().table("minecraft")
+        omicron.runConnectionAsync(connection ->
+                connection.table("minecraft")
                 .create()
                 .ifNotExists()
                 .column("user BIGINT(20) UNIQUE KEY")
                 .column("uuid VARCHAR(36) UNIQUE")
                 .executeAsync()
-                .thenAccept(i -> omicron.getLogger().info("Loaded Minecraft with status {}", i));
+                .thenAccept(i -> omicron.getLogger().info("Loaded Minecraft with status {}", i)));
     }
 
     public CompletableFuture<String> getUsername(long id) {
-        return omicron.getConnection()
-                .table("minecraft")
+        return omicron.runConnectionAsync(connection ->
+                connection.table("minecraft")
                 .select("mc")
                 .where().prepareEquals("user", id)
                 .then().executeAsync()
@@ -37,14 +38,13 @@ public class MinecraftManager {
                         e.printStackTrace();
                         return null;
                     }
-                });
+                }));
     }
 
     public void setUsername(long id, String mc) {
         CompletableFuture.runAsync(() -> {
-            try {
-                PreparedStatement statement = omicron.getConnection().getUnderlying()
-                        .prepareStatement("REPLACE INTO minecraft (user, mc) VALUES (?, ?);");
+            try(PreparedStatement statement = omicron.getConnection().getUnderlying()
+                    .prepareStatement("REPLACE INTO minecraft (user, mc) VALUES (?, ?);")) {
                 statement.setLong(1, id);
                 statement.setString(2, mc);
 

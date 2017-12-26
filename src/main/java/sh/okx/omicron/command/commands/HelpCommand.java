@@ -70,37 +70,37 @@ public class HelpCommand extends Command {
             eb.setFooter("Use " + prefix + name + " <command> to get help with a specific command, eg " +
                     prefix + name + " feed.", null);
 
-            Connection connection = omicron.getConnection();
+            try(Connection connection = omicron.getConnection()) {
+                Set<Command> disabledCommands = new HashSet<>();
+                for (Category category : Category.values()) {
+                    StringBuilder description = new StringBuilder();
+                    for (Command command : commands) {
+                        if (guild != null && omicron.getCommandManager().isDisabled(connection,
+                                guild.getIdLong(), command).join()) {
+                            disabledCommands.add(command);
+                            continue;
+                        }
 
-            Set<Command> disabledCommands = new HashSet<>();
-            for (Category category : Category.values()) {
-                StringBuilder description = new StringBuilder();
-                for (Command command : commands) {
-                    if (guild != null && omicron.getCommandManager().isDisabled(connection,
-                            guild.getIdLong(), command).join()) {
-                        disabledCommands.add(command);
-                        continue;
+                        if (command.getCategory() != category) {
+                            continue;
+                        }
+
+                        description.append(prefix).append(command.getName()).append("\t");
                     }
 
-                    if (command.getCategory() != category) {
-                        continue;
+                    eb.addField(category.toString(), description.toString().trim(), false);
+                }
+
+                if (guild != null && message.getMember().hasPermission(Permission.MANAGE_SERVER) && !disabledCommands.isEmpty()) {
+                    StringBuilder disabled = new StringBuilder();
+                    for (Command disabledCommand : disabledCommands) {
+                        disabled.append(prefix).append(disabledCommand.getName()).append("\t");
                     }
-
-                    description.append(prefix).append(command.getName()).append("\t");
+                    eb.addField("Disabled", disabled.toString().trim(), false);
                 }
 
-                eb.addField(category.toString(), description.toString().trim(), false);
+                channel.sendMessage(eb.build()).queue();
             }
-
-            if (guild != null && message.getMember().hasPermission(Permission.MANAGE_SERVER) && !disabledCommands.isEmpty()) {
-                StringBuilder disabled = new StringBuilder();
-                for (Command disabledCommand : disabledCommands) {
-                    disabled.append(prefix).append(disabledCommand.getName()).append("\t");
-                }
-                eb.addField("Disabled", disabled.toString().trim(), false);
-            }
-
-            channel.sendMessage(eb.build()).queue();
         });
     }
 }

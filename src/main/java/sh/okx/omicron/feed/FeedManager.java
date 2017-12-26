@@ -31,17 +31,17 @@ public class FeedManager {
     public FeedManager(Omicron omicron) {
         this.omicron = omicron;
 
-        Connection connection = omicron.getConnection();
-
-        ExecuteTable feeds = connection.table("feeds");
-        feeds.create().ifNotExists()
-                .column("prefix VARCHAR(255)")
-                .column("type VARCHAR(20)")
-                .column("channel BIGINT(20)")
-                .column("content VARCHAR(255)")
-                .executeAsync()
-                .thenAccept(i -> feeds.select().executeAsync()
-                        .thenAccept(qr -> loadFeeds(qr.getResultSet())));
+        omicron.runConnection(connection -> {
+            ExecuteTable feeds = connection.table("feeds");
+            feeds.create().ifNotExists()
+                    .column("prefix VARCHAR(255)")
+                    .column("type VARCHAR(20)")
+                    .column("channel BIGINT(20)")
+                    .column("content VARCHAR(255)")
+                    .executeAsync()
+                    .thenAccept(i -> feeds.select().executeAsync()
+                            .thenAccept(qr -> loadFeeds(qr.getResultSet())));
+        });
     }
 
     private void loadFeeds(ResultSet rs) {
@@ -66,9 +66,9 @@ public class FeedManager {
     }
 
     public void removeFeed(String channel, String content) {
-        CompletableFuture.runAsync(() -> {
+        CompletableFuture.runAsync(() -> omicron.runConnection(connection -> {
             try {
-                PreparedStatement statement = omicron.getConnection().getUnderlying().prepareStatement(
+                PreparedStatement statement = connection.getUnderlying().prepareStatement(
                         "DELETE FROM feeds WHERE channel=? AND content=?;");
                 statement.setString(1, channel);
                 statement.setString(2, content);
@@ -86,19 +86,17 @@ public class FeedManager {
             } catch(SQLException ex) {
                 ex.printStackTrace();
             }
-        });
+        }));
     }
 
     public CompletableFuture<Boolean> hasFeed(String channelId, String content) {
-        Connection connection = omicron.getConnection();
-
-        return connection.table("feeds").select()
-                .where()
-                .prepareEquals("channel", channelId)
-                .and()
-                .prepareEquals("content", content)
-                .then().executeAsync()
-                .thenApply(QueryResults::next);
+        return omicron.runConnectionAsync(connection -> connection.table("feeds").select()
+               .where()
+               .prepareEquals("channel", channelId)
+               .and()
+               .prepareEquals("content", content)
+               .then().executeAsync()
+               .thenApply(QueryResults::next));
     }
 
     /**
@@ -108,11 +106,10 @@ public class FeedManager {
      */
     public void addFeed(String prefix, FeedType type, MessageChannel channel, String content) throws MalformedURLException {
         CompletableFuture.runAsync(() -> {
-            try {
-                Connection connection = omicron.getConnection();
+            try(Connection connection = omicron.getConnection();
+                 PreparedStatement statement = connection.getUnderlying().prepareStatement(
+                         "REPLACE INTO feeds (prefix, type, channel, content) VALUES (?, ?, ?, ?);")) {
 
-                PreparedStatement statement = connection.getUnderlying().prepareStatement(
-                        "REPLACE INTO feeds (prefix, type, channel, content) VALUES (?, ?, ?, ?);");
                 statement.setString(1, prefix);
                 statement.setString(2, type.name());
                 statement.setLong(3, channel.getIdLong());

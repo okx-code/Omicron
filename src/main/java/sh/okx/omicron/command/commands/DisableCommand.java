@@ -10,7 +10,7 @@ import sh.okx.omicron.command.CommandManager;
 public class DisableCommand extends Command {
     public DisableCommand(Omicron omicron) {
         super(omicron, "disable", Category.MISC,
-                "This command allows you to disable a certain command in a guild." +
+                "This command allows you to disable a certain command in a guild.\n" +
                         "Usage: **o/disable <command>**. You cannot disable this command or the enable command.");
     }
 

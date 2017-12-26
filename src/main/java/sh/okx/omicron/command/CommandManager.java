@@ -14,9 +14,9 @@ import sh.okx.omicron.minecraft.TokenCommand;
 import sh.okx.omicron.music.commands.*;
 import sh.okx.omicron.roles.RoleCommand;
 import sh.okx.omicron.trivia.TriviaCommand;
+import sh.okx.sql.api.Connection;
 import sh.okx.sql.api.query.QueryResults;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.concurrent.CompletableFuture;
@@ -57,14 +57,14 @@ public class CommandManager extends ListenerAdapter {
 
         omicron.getJDA().addEventListener(this);
 
-        omicron.getConnection()
-                .table("disabled_commands")
+        omicron.runConnectionAsync(connection ->
+                connection.table("disabled_commands")
                 .create()
                 .ifNotExists()
                 .column("command VARCHAR(255)")
                 .column("guild BIGINT(20)")
                 .executeAsync()
-                .thenAccept(i -> omicron.getLogger().info("Loaded commands with status {}", i));
+                .thenAccept(i -> omicron.getLogger().info("Loaded commands with status {}", i)));
     }
 
     public String getPrefix() {
@@ -90,21 +90,21 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
 
-        for(Command command : commands) {
+        for (Command command : commands) {
             boolean useAlias = false;
-            for(String alias : command.getAliases()) {
-                if(parts[0].equalsIgnoreCase(prefix + alias)) {
+            for (String alias : command.getAliases()) {
+                if (parts[0].equalsIgnoreCase(prefix + alias)) {
                     useAlias = true;
                     break;
                 }
             }
-            if(!useAlias && !parts[0].equalsIgnoreCase(prefix + command.getName())) {
+            if (!useAlias && !parts[0].equalsIgnoreCase(prefix + command.getName())) {
                 continue;
             }
 
             if (e.getGuild() != null) {
                 isDisabled(e.getGuild().getIdLong(), command).thenAccept(b -> {
-                    if(!b) {
+                    if (!b) {
                         command.run(e.getMessage(), parts.length > 1 ? parts[1] : "");
                     }
                 });
@@ -117,7 +117,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public CompletableFuture<Boolean> isDisabled(long guild, Command command) {
-        return isDisabled(omicron.getConnection(), guild, command);
+        return omicron.runConnectionAsync(connection -> isDisabled(connection, guild, command));
     }
 
     public CompletableFuture<Boolean> isDisabled(sh.okx.sql.api.Connection connection, long guild, Command command) {
@@ -134,16 +134,10 @@ public class CommandManager extends ListenerAdapter {
     public void setDisabled(Command command, long guild, boolean disable) {
         String name = command.getName();
         CompletableFuture.runAsync(() -> {
-            try {
-                Connection connection = omicron.getConnection().getUnderlying();
-
-                PreparedStatement statement;
-                if (disable) {
-                    statement = connection.prepareStatement("INSERT INTO disabled_commands (command, guild) VALUES (?, ?);");
-                } else {
-                    statement = connection.prepareStatement("DELETE FROM disabled_commands WHERE command=? AND guild=?");
-                }
-
+            try(Connection connection = omicron.getConnection();
+                PreparedStatement statement = connection.getUnderlying().prepareStatement(disable ?
+                        "INSERT INTO disabled_commands (command, guild) VALUES (?, ?);" :
+                        "DELETE FROM disabled_commands WHERE command=? AND guild=?")) {
                 statement.setString(1, name);
                 statement.setLong(2, guild);
 

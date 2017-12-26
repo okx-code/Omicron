@@ -24,6 +24,9 @@ import sh.okx.sql.api.PooledConnection;
 import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Omicron {
     public static void main(String[] args) throws IOException, LoginException,
@@ -77,16 +80,36 @@ public class Omicron {
         this.minecraftManager = new MinecraftManager(this);
     }
 
+    /**
+     * Get a connection from the pool.
+     * This must be closed!
+     * @return A connection form the pool.
+     */
     public Connection getConnection() {
         return connectionPool.getConnection();
     }
 
-    public Logger getLogger() {
-        return LoggerFactory.getLogger(this.getClass());
+    /**
+     * Run a {@link Consumer} and close the connection to return it to the pool.
+     * @param consumer The synchronous operation(s) on the {@link Connection}.
+     */
+    public void runConnection(Consumer<Connection> consumer) {
+        Connection connection = getConnection();
+        consumer.accept(connection);
+        connection.close();
     }
 
-    public Logger getLogger(Object o) {
-        return LoggerFactory.getLogger(o.getClass());
+    /**
+     * Run a {@link Function} asynchronously and then close the connection to return it to the pool.
+     * @param function The asynchronous operation(s) on the {@link Connection}.
+     */
+    public <T> CompletableFuture<T> runConnectionAsync(Function<Connection, CompletableFuture<T>> function) {
+        Connection connection = getConnection();
+        return function.apply(connection).whenComplete((a, b) -> connection.close());
+    }
+
+    public Logger getLogger() {
+        return LoggerFactory.getLogger(this.getClass());
     }
 
     public boolean isDeveloper(long id) {

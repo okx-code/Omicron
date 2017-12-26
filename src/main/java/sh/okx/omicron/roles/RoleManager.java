@@ -4,7 +4,11 @@ import sh.okx.omicron.Omicron;
 import sh.okx.sql.api.SqlException;
 import sh.okx.sql.api.query.QueryResults;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class RoleManager {
@@ -14,40 +18,79 @@ public class RoleManager {
         this.omicron = omicron;
         omicron.getJDA().addEventListener(new RoleListener(omicron));
 
-        omicron.getConnection()
-                .table("roles")
+        omicron.runConnectionAsync(connection ->
+            connection.table("roles")
                 .create()
                 .ifNotExists()
                 .column("guild BIGINT(20)")
                 .column("role BIGINT(20)")
+                .column("used BIT") // 0 = add on join, 1 = can be manually obtainable
                 .executeAsync()
-                .thenAccept(i -> omicron.getLogger().info("Loaded default roles with status " + i));
+                .thenAccept(i -> omicron.getLogger().info("Loaded default roles with status " + i)));
     }
 
-    public CompletableFuture<Boolean> hasDefaultRole(long guildId) {
-        return omicron.getConnection()
-                .table("roles")
-                .select()
-                .where().prepareEquals("guild", guildId)
-                .then()
-                .executeAsync()
-                .thenApply(QueryResults::next);
+    public CompletableFuture<Set<Long>> getFreeRoles(long guildId) {
+        return omicron.runConnectionAsync(connection ->
+                connection.table("roles")
+                        .select()
+                        .where().prepareEquals("guild", guildId).and().prepareEquals("used", 1)
+                        .then()
+                        .executeAsync()
+                        .thenApply(qr -> {
+                            Set<Long> roles = new HashSet<>();
+                            ResultSet rs = qr.getResultSet();
+                            try {
+                                while(rs.next()) {
+                                    roles.add(rs.getLong("role"));
+                                }
+                            } catch(SQLException ex) {
+                                throw new SqlException(ex);
+                            }
+                            return roles;
+                        }));
     }
 
-    public void setDefaultRole(long guild, long role) {
+    public void addFreeRole(long guild, long role) {
         CompletableFuture.runAsync(() -> {
-            try {
-                Connection connection = omicron.getConnection().getUnderlying();
-
-                PreparedStatement statement = connection.prepareStatement("REPLACE INTO roles (guild, role) " +
-                        "VALUES (?, ?);");
+            try(PreparedStatement statement = omicron.getConnection().getUnderlying()
+                    .prepareStatement("INSERT INTO roles (guild, role, used) VALUES (?, ?, 1);")) {
                 statement.setLong(1, guild);
                 statement.setLong(2, role);
 
                 statement.execute();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
-                statement.close();
-                connection.close();
+    public void removeFreeRole(long guild, long role) {
+        omicron.runConnectionAsync(connection ->
+                connection.table("roles").delete().where()
+                .prepareEquals("guild", guild).and()
+                .prepareEquals("role", role).and()
+                .prepareEquals("used", 1)
+                .then().executeAsync());
+    }
+
+    public CompletableFuture<Boolean> hasDefaultRole(long guildId) {
+        return omicron.runConnectionAsync(connection ->
+                connection.table("roles")
+                .select()
+                .where().prepareEquals("guild", guildId).and().prepareEquals("used", 0)
+                .then()
+                .executeAsync()
+                .thenApply(QueryResults::next));
+    }
+
+    public void setDefaultRole(long guild, long role) {
+        CompletableFuture.runAsync(() -> {
+            try(PreparedStatement statement = omicron.getConnection().getUnderlying()
+                        .prepareStatement("REPLACE INTO roles (guild, role, used) VALUES (?, ?, 0);")) {
+                statement.setLong(1, guild);
+                statement.setLong(2, role);
+
+                statement.execute();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -55,31 +98,21 @@ public class RoleManager {
     }
 
     public void removeDefaultRole(long guild) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                Connection connection = omicron.getConnection().getUnderlying();
-
-                PreparedStatement statement = connection.prepareStatement("DELETE FROM roles WHERE guild=?;");
-                statement.setLong(1, guild);
-
-                statement.execute();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
+        omicron.runConnectionAsync(connection -> connection.table("roles")
+                .delete().where().prepareEquals("guild", guild).then().executeAsync());
     }
 
     public CompletableFuture<Long> getDefaultRole(long guild) {
-        return omicron.getConnection().table("roles")
-                .select("role")
-                .where().prepareEquals("guild", guild).then()
-                .executeAsync()
-                .thenApply(qr -> {
-                    try {
-                        return qr.getResultSet().getLong("role");
-                    } catch (SQLException e) {
-                        throw new SqlException(e);
-                    }
-                });
+        return omicron.runConnectionAsync(connection -> connection.table("roles")
+            .select("role")
+            .where().prepareEquals("guild", guild).and().prepareEquals("used", 0).then()
+            .executeAsync()
+            .thenApply(qr -> {
+                try {
+                    return qr.getResultSet().getLong("role");
+                } catch (SQLException e) {
+                    throw new SqlException(e);
+                }
+            }));
     }
 }
