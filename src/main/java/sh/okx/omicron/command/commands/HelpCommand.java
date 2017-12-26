@@ -9,6 +9,7 @@ import net.dv8tion.jda.core.entities.MessageChannel;
 import sh.okx.omicron.Omicron;
 import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
+import sh.okx.sql.api.Connection;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -68,11 +69,14 @@ public class HelpCommand extends Command {
             eb.setFooter("Use " + prefix + name + " <command> to get help with a specific command, eg " +
                     prefix + name + " feed.", null);
 
+            Connection connection = omicron.getConnection();
+
             Set<Command> disabledCommands = new HashSet<>();
             for (Category category : Category.values()) {
                 StringBuilder description = new StringBuilder();
                 for (Command command : commands) {
-                    if (guild != null && omicron.getCommandManager().isDisabled(guild.getIdLong(), command).join()) {
+                    if (guild != null && omicron.getCommandManager().isDisabled(connection,
+                            guild.getIdLong(), command).join()) {
                         disabledCommands.add(command);
                         continue;
                     }

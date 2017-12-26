@@ -35,7 +35,3 @@ dependencies {
     compile 'redis.clients:jedis:2.9.0'
     compile 'com.github.okx-code:MySqlLib:master-SNAPSHOT'
 }
-
-configurations.all {
-    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-}

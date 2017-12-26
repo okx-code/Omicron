@@ -19,6 +19,7 @@ import sh.okx.omicron.roles.RoleManager;
 import sh.okx.omicron.trivia.TriviaManager;
 import sh.okx.sql.ConnectionBuilder;
 import sh.okx.sql.api.Connection;
+import sh.okx.sql.api.PooledConnection;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
@@ -55,16 +56,16 @@ public class Omicron {
     private EvaluateManager evaluateManager;
     private MinecraftManager minecraftManager;
 
-    private Connection connection;
+    private PooledConnection connectionPool;
 
     public Omicron(JDA jda) throws IOException {
-        this.jda = jda;
-
-        this.connection = new ConnectionBuilder()
+        connectionPool = new ConnectionBuilder()
                 .setCredentials("root",
                         IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim())
                 .setDatabase("omicron")
-                .build();
+                .buildPool();
+
+        this.jda = jda;
 
         this.feedManager = new FeedManager(this);
         this.triviaManager = new TriviaManager(this);
@@ -77,7 +78,7 @@ public class Omicron {
     }
 
     public Connection getConnection() {
-        return connection;
+        return connectionPool.getConnection();
     }
 
     public Logger getLogger() {

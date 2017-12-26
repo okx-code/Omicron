@@ -117,7 +117,11 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public CompletableFuture<Boolean> isDisabled(long guild, Command command) {
-        return omicron.getConnection().table("disabled_commands")
+        return isDisabled(omicron.getConnection(), guild, command);
+    }
+
+    public CompletableFuture<Boolean> isDisabled(sh.okx.sql.api.Connection connection, long guild, Command command) {
+        return connection.table("disabled_commands")
                 .select()
                 .where()
                 .prepareEquals("command", command.getName())
