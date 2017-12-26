@@ -32,7 +32,6 @@ public class HelpCommand extends Command {
 
         Command[] commands = omicron.getCommandManager().getCommands();
 
-        DESCRIPTION:
         if(!content.isEmpty()) {
             eb.setFooter( "<> is required, [] is optional.", null);
 
@@ -53,7 +52,9 @@ public class HelpCommand extends Command {
                     if(aliases.length > 0) {
                         eb.addField("Aliases", String.join("\t", aliases), false);
                     }
-                    break DESCRIPTION;
+
+                    channel.sendMessage(eb.build()).queue();
+                    return;
                 }
             }
 
