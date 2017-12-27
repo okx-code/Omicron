@@ -96,7 +96,7 @@ public class RoleCommand extends Command {
                 }
 
                 if(!interact) {
-                    channel.sendMessage("At least one of my roles must be above the role \"" + role.getName() + "\"!").queue();
+                    channel.sendMessage("At least one of my roles must be above the role **" + role.getName() + "**!").queue();
                     return;
                 }
 
@@ -161,10 +161,10 @@ public class RoleCommand extends Command {
 
                     if(member.getRoles().contains(role)) {
                         guild.getController().removeRolesFromMember(member, role).reason("Free role from o/role").queue();
-                        channel.sendMessage("You have removed the role: **" + role.getName() + "**").queue();
+                        channel.sendMessage("You have removed the role **" + role.getName() + "**").queue();
                     } else {
                         guild.getController().addRolesToMember(member, role).reason("Free role from o/role").queue();
-                        channel.sendMessage("You have received the role: **" + role.getName() + "**").queue();
+                        channel.sendMessage("You have received the role **" + role.getName() + "**").queue();
                     }
                 });
                 return;
