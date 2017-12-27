@@ -164,11 +164,15 @@ public class LoggingManager {
                 .prepareEquals("channel", channel.getId()).then()
                 .executeAsync()
                 .thenApply(a -> {
+                    if(!a.next()) {
+                        return 0L;
+                    }
+
                     try {
                         return a.getNext().getResultSet().getLong("log");
                     } catch (SQLException e) {
                         e.printStackTrace();
-                        return -1L;
+                        return 0L;
                     }
                 }));
     }
