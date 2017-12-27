@@ -13,6 +13,7 @@ import sh.okx.omicron.command.CommandManager;
 import sh.okx.omicron.custom.CustomManager;
 import sh.okx.omicron.evaluate.EvaluateManager;
 import sh.okx.omicron.feed.FeedManager;
+import sh.okx.omicron.logging.LoggingManager;
 import sh.okx.omicron.minecraft.MinecraftManager;
 import sh.okx.omicron.music.MusicManager;
 import sh.okx.omicron.roles.RoleManager;
@@ -58,18 +59,25 @@ public class Omicron {
     private CustomManager customManager;
     private EvaluateManager evaluateManager;
     private MinecraftManager minecraftManager;
+    private LoggingManager loggingManager;
 
     private PooledConnection connectionPool;
 
     public Omicron(JDA jda) throws IOException {
+        this.jda = jda;
+        connect();
+        setupManagers();
+    }
+
+    private void connect() throws IOException {
         connectionPool = new ConnectionBuilder()
                 .setCredentials("root",
                         IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim())
                 .setDatabase("omicron")
                 .buildPool();
+    }
 
-        this.jda = jda;
-
+    private void setupManagers() {
         this.feedManager = new FeedManager(this);
         this.triviaManager = new TriviaManager(this);
         this.musicManager = new MusicManager(this);
@@ -78,6 +86,7 @@ public class Omicron {
         this.customManager = new CustomManager(this);
         this.evaluateManager = new EvaluateManager();
         this.minecraftManager = new MinecraftManager(this);
+        this.loggingManager = new LoggingManager(this);
     }
 
     /**
@@ -154,5 +163,9 @@ public class Omicron {
 
     public MinecraftManager getMinecraftManager() {
         return minecraftManager;
+    }
+
+    public LoggingManager getLoggingManager() {
+        return loggingManager;
     }
 }
