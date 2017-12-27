@@ -86,7 +86,7 @@ public class LoggingListener extends ListenerAdapter {
                     eb.addField("Edited at", e.getMessage().getEditedTime()
                             .format(DateTimeFormatter.RFC_1123_DATE_TIME), false);
 
-                    eb.addField("Channel", "#" + e.getChannel().getName(), false);
+                    eb.addField("Channel", e.getChannel().getAsMention(), false);
 
                     eb.setTimestamp(Instant.now());
                     eb.setFooter("ID: " + e.getMessageIdLong(), null);

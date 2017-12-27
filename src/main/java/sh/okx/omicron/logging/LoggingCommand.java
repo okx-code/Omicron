@@ -19,7 +19,7 @@ public class LoggingCommand extends Command {
                         "Usage: **o/log <id>** to toggle logging of that ID in this channel.\n" +
                         "Use **o/log list** to see the ID of each event.\n" +
                         "Use **o/log active** to see what this channel is currently logging.",
-                "logging", "logger");
+                "logging", "logger", "logs");
     }
 
     @Override

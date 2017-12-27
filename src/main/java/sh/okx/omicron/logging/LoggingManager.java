@@ -127,7 +127,8 @@ public class LoggingManager {
 
                         try {
                             ResultSet rs = qr.getResultSet();
-                            return new LogResult(nbit(rs.getLong("log"), indexes.get(clazz)) > 0 && (channel.getIdLong() != rs.getLong("channel")),
+                            return new LogResult(nbit(rs.getLong("log"), indexes.get(clazz)) > 0 &&
+                                    (channel.getIdLong() != rs.getLong("channel")),
                                 omicron.getJDA().getTextChannelById(rs.getLong("channel")));
                         } catch(SQLException ex) {
                             ex.printStackTrace();
@@ -159,17 +160,17 @@ public class LoggingManager {
     public CompletableFuture<Long> getLogging(TextChannel channel) {
         return omicron.runConnectionAsync(connection ->
                 connection.table("logging")
-                .select("log").where()
-                .prepareEquals("guild", channel.getGuild().getIdLong()).and()
+                .select().where()
+                .prepareEquals("guild", channel.getGuild().getId()).and()
                 .prepareEquals("channel", channel.getId()).then()
                 .executeAsync()
-                .thenApply(a -> {
-                    if(!a.next()) {
+                .thenApply(qr -> {
+                    if(!qr.next()) {
                         return 0L;
                     }
 
                     try {
-                        return a.getNext().getResultSet().getLong("log");
+                        return qr.getResultSet().getLong("log");
                     } catch (SQLException e) {
                         e.printStackTrace();
                         return 0L;
