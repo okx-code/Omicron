@@ -75,6 +75,10 @@ public class HelpCommand extends Command {
                 for (Category category : Category.values()) {
                     StringBuilder description = new StringBuilder();
                     for (Command command : commands) {
+                        if(command.getName().equals("restart") && !omicron.isDeveloper(message.getAuthor().getIdLong())) {
+                            continue;
+                        }
+
                         if (guild != null && omicron.getCommandManager().isDisabled(connection,
                                 guild.getIdLong(), command).join()) {
                             disabledCommands.add(command);
