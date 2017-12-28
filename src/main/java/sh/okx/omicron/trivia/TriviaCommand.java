@@ -25,7 +25,7 @@ public class TriviaCommand extends Command {
         super(omicron, "trivia", Category.MISC,
                 "Trivia questions. Run without any arguments for a random category,\n" +
                         "Use **o/trivia categories** to list categories, and use\n" +
-                        "**o/trivia <category>** for a question in a specific category.");
+                        "**o/trivia [category]** for a question in a specific category.");
 
         categories.put("General Knowledge", 9);
         categories.put("Books", 10);

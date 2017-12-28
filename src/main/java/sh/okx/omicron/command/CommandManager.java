@@ -54,6 +54,7 @@ public class CommandManager extends ListenerAdapter {
                 new MinecraftCommand(omicron),
                 new InfoCommand(omicron),
                 new LoggingCommand(omicron),
+                new DefineCommand(omicron),
         };
         this.prefix = prefix;
         this.omicron = omicron;
