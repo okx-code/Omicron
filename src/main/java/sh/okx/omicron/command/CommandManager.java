@@ -10,8 +10,6 @@ import sh.okx.omicron.evaluate.commands.Python2Command;
 import sh.okx.omicron.evaluate.commands.PythonCommand;
 import sh.okx.omicron.feed.FeedCommand;
 import sh.okx.omicron.logging.LoggingCommand;
-import sh.okx.omicron.minecraft.MinecraftCommand;
-import sh.okx.omicron.minecraft.TokenCommand;
 import sh.okx.omicron.music.commands.*;
 import sh.okx.omicron.roles.RoleCommand;
 import sh.okx.omicron.trivia.TriviaCommand;
@@ -50,8 +48,8 @@ public class CommandManager extends ListenerAdapter {
                 new NodeJsCommand(omicron),
                 new DisableCommand(omicron),
                 new EnableCommand(omicron),
-                new TokenCommand(omicron),
-                new MinecraftCommand(omicron),
+                /*new TokenCommand(omicron),
+                new MinecraftCommand(omicron),*/
                 new InfoCommand(omicron),
                 new LoggingCommand(omicron),
                 new DefineCommand(omicron),
