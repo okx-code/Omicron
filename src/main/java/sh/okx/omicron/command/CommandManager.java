@@ -53,6 +53,7 @@ public class CommandManager extends ListenerAdapter {
                 new InfoCommand(omicron),
                 new LoggingCommand(omicron),
                 new DefineCommand(omicron),
+                new PrefixCommand(omicron),
         };
         this.prefix = prefix;
         this.omicron = omicron;
@@ -67,14 +68,15 @@ public class CommandManager extends ListenerAdapter {
                 .column("guild BIGINT(20)")
                 .executeAsync()
                 .thenAccept(i -> omicron.getLogger().info("Loaded commands with status {}", i)));
-    }
+        omicron.runConnectionAsync(connection ->
+                connection.table("prefixes")
+                .create()
+                .ifNotExists()
+                .column("guild BIGINT(20) UNIQUE KEY")
+                .column("prefix VARCHAR(255) DEFAULT 'o/'")
+                .executeAsync()
+                .thenAccept(i -> omicron.getLogger().info("Loaded prefixes with status {}", i)));
 
-    public String getPrefix() {
-        return prefix;
-    }
-
-    public void setPrefix(String prefix) {
-        this.prefix = prefix;
     }
 
     public Command[] getCommands() {
@@ -87,35 +89,65 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
 
-        String[] parts = e.getMessage().getContentRaw().split(" ", 2);
-        if(!parts[0].startsWith(prefix)) {
-            return;
-        }
+        getPrefix(e.getGuild().getIdLong()).thenAccept(prefix -> {
 
-        for (Command command : commands) {
-            boolean useAlias = false;
-            for (String alias : command.getAliases()) {
-                if (parts[0].equalsIgnoreCase(prefix + alias)) {
-                    useAlias = true;
-                    break;
-                }
-            }
-            if (!useAlias && !parts[0].equalsIgnoreCase(prefix + command.getName())) {
-                continue;
-            }
-
-            if (e.getGuild() != null) {
-                isDisabled(e.getGuild().getIdLong(), command).thenAccept(b -> {
-                    if (!b) {
-                        command.run(e.getMessage(), parts.length > 1 ? parts[1] : "");
-                    }
-                });
+            String[] parts = e.getMessage().getContentRaw().split(" ", 2);
+            if (!parts[0].startsWith(prefix)) {
                 return;
             }
 
-            command.run(e.getMessage(), parts.length > 1 ? parts[1] : "");
-            return;
-        }
+            for (Command command : commands) {
+                boolean useAlias = false;
+                for (String alias : command.getAliases()) {
+                    if (parts[0].equalsIgnoreCase(prefix + alias)) {
+                        useAlias = true;
+                        break;
+                    }
+                }
+                if (!useAlias && !parts[0].equalsIgnoreCase(prefix + command.getName())) {
+                    continue;
+                }
+
+                if (e.getGuild() != null) {
+                    isDisabled(e.getGuild().getIdLong(), command).thenAccept(b -> {
+                        if (!b) {
+                            command.run(e.getMessage(), parts.length > 1 ? parts[1] : "");
+                        }
+                    });
+                    return;
+                }
+
+                command.run(e.getMessage(), parts.length > 1 ? parts[1] : "");
+                return;
+            }
+        });
+    }
+
+    public CompletableFuture<String> getPrefix(long guild) {
+        return omicron.runConnectionAsync(connection ->
+                connection.table("prefixes")
+                .select("prefix")
+                .where().prepareEquals("guild", guild).then()
+                .executeAsync()
+                .thenApply(qr -> {
+                    if(!qr.next()) {
+                        return "o/";
+                    }
+
+                    try {
+                        return qr.getResultSet().getString("prefix");
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        return "o/";
+                    }
+                })
+        );
+    }
+
+    public void setPrefix(long guild, String prefix) {
+        CompletableFuture.runAsync(() -> omicron.runConnection(connection ->
+                connection.executeUpdate("REPLACE INTO prefixes (guild, prefix) VALUES (?, ?)",
+                String.valueOf(guild), prefix)));
     }
 
     public CompletableFuture<Boolean> isDisabled(long guild, Command command) {

@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class RoleCommand extends Command {
     public RoleCommand(Omicron omicron) {
-        super(omicron, "role", Category.MISC,
+        super(omicron, "role", Category.MANAGE,
             "This command can be used for two things: Users being able to get/remove a role at will, " +
             "and giving users a role when they join." +
             "To add yourself to a role, use **o/role get <role>**\n" +

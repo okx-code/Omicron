@@ -2,6 +2,7 @@ package sh.okx.omicron.command;
 
 public enum Category {
     MISC("Miscellaneous"),
+    MANAGE("Management"),
     MUSIC("Music"),
     EVAL("Evaluation");
 

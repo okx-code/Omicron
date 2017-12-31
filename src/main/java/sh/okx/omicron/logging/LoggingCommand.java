@@ -13,7 +13,7 @@ import java.util.List;
 
 public class LoggingCommand extends Command {
     public LoggingCommand(Omicron omicron) {
-        super(omicron, "log", Category.MISC,
+        super(omicron, "log", Category.MANAGE,
                 "Log a certain event in this channel.\n" +
                         "Manage server permission is required to run this command.\n" +
                         "Usage: **o/log <id>** to toggle logging of that ID in this channel.\n" +

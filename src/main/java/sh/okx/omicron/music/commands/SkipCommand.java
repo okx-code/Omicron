@@ -8,10 +8,12 @@ import sh.okx.omicron.command.Category;
 import sh.okx.omicron.command.Command;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class SkipCommand extends Command {
-    private Map<String, Integer> votes = new HashMap<>();
+    private Map<String, Set<Long>> votes = new HashMap<>();
 
     public SkipCommand(Omicron omicron) {
         super(omicron, "skip", Category.MUSIC,
@@ -38,19 +40,28 @@ public class SkipCommand extends Command {
                 return;
             }
 
-            channel.sendMessage("Skipping: " + playing.getInfo().title).queue();
+            channel.sendMessage("Force skipping: " + playing.getInfo().title).queue();
             votes.remove(guild.getId());
             omicron.getMusicManager().skip(guild);
             return;
         }
 
-        votes.put(guild.getId(), votes.getOrDefault(guild.getId(), 0)+1);
+        long id = message.getAuthor().getIdLong();
+        Set<Long> voters = votes.getOrDefault(guild.getId(), new HashSet<>());
+        if(!voters.add(id)) {
+            channel.sendMessage("You have already voted to skip!").queue();
+            return;
+        }
 
-        int required = (int) Math.ceil((guild.getAudioManager().getConnectedChannel().getMembers().size()-1) / 2.0f);
-        int has = votes.get(guild.getId());
+        votes.put(guild.getId(), voters);
+
+        int required = (int) Math.ceil((guild.getAudioManager().getConnectedChannel().getMembers().size()) / 2.0f);
+        int has = votes.get(guild.getId()).size();
 
         if(has >= required) {
-            channel.sendMessage("Skipping song; " + required + " votes reached.").queue();
+
+            channel.sendMessage("Skipping: " + omicron.getMusicManager().getGuildAudioPlayer(guild)
+                    .player.getPlayingTrack().getInfo().title).queue();
             votes.remove(guild.getId());
             omicron.getMusicManager().skip(guild);
             return;
