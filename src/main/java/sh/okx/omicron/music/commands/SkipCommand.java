@@ -41,6 +41,7 @@ public class SkipCommand extends Command {
             }
 
             channel.sendMessage("Force skipping: " + playing.getInfo().title).queue();
+            votes.get(guild.getId()).clear();
             votes.remove(guild.getId());
             omicron.getMusicManager().skip(guild);
             return;
@@ -62,6 +63,7 @@ public class SkipCommand extends Command {
 
             channel.sendMessage("Skipping: " + omicron.getMusicManager().getGuildAudioPlayer(guild)
                     .player.getPlayingTrack().getInfo().title).queue();
+            votes.get(guild.getId()).clear();
             votes.remove(guild.getId());
             omicron.getMusicManager().skip(guild);
             return;

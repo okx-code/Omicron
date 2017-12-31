@@ -3,6 +3,7 @@ package sh.okx.omicron.music;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent;
+import net.dv8tion.jda.core.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import sh.okx.omicron.Omicron;
 
@@ -19,12 +20,22 @@ public class MusicListener extends ListenerAdapter {
     public void onGuildVoiceLeave(GuildVoiceLeaveEvent e) {
         VoiceChannel left = e.getChannelLeft();
         List<Member> members = left.getMembers();
-        if(members.size() != 1) {
+        if(members.size() > 1) {
             return;
         }
 
         if(members.get(0).getUser().getId().equals(e.getJDA().getSelfUser().getId())) {
             omicron.getMusicManager().leave(left.getGuild());
+        }
+    }
+
+    @Override
+    public void onGuildVoiceMove(GuildVoiceMoveEvent e) {
+        if(e.getMember().getUser().getIdLong() == e.getJDA().getSelfUser().getIdLong()) {
+            if(e.getChannelJoined().getMembers().size() > 1) {
+                return;
+            }
+            omicron.getMusicManager().leave(e.getGuild());
         }
     }
 }

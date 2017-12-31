@@ -86,6 +86,11 @@ public class MusicManager {
         }
 
 
+        AudioTrack current = musicManager.player.getPlayingTrack();
+        long millis = musicManager.scheduler.getQueue()
+                .stream()
+                .mapToLong(t -> t.getTrack().getDuration())
+                .sum() + (current == null ? 0 : current.getInfo().length);
         playerManager.loadItemOrdered(musicManager,
                 "https://youtube.com/watch?v=" + video.getId(), new AudioLoadResultHandler() {
             @Override
@@ -100,12 +105,7 @@ public class MusicManager {
                     eb.setTitle(video.getSnippet().getTitle(),
                             "https://youtube.com/watch?v=" + video.getId());
                     eb.addField("Estimated Wait Time",
-                            formatTime(musicManager.scheduler.getQueue()
-                                    .stream()
-                                    .filter(audioTrack -> audioTrack.equals(track))
-                                    .map(TrackData::getTrack)
-                                    .mapToLong(AudioTrack::getDuration)
-                                    .sum()+musicManager.player.getPlayingTrack().getInfo().length), true);
+                            formatTime(millis), true);
                     eb.addField("Length", formatTime(track.getInfo().length), true);
                     eb.setThumbnail(video.getSnippet().getThumbnails().getHigh().getUrl());
                     eb.setColor(Color.WHITE);
