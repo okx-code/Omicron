@@ -38,37 +38,39 @@ public class FeedCommand extends Command {
         }
 
         String[] parts = args.split(" ", 3);
-        if(parts.length < 2) {
-            channel.sendMessage("Usage: **" +
-                    omicron.getCommandManager().getPrefix() + name +
-                    "** <type=youtube/reddit> <feed/user id/subreddit>").queue();
-            return;
-        }
-        FeedType type;
-        try {
-            type = FeedType.valueOf(parts[0].toUpperCase());
-        } catch(IllegalArgumentException e) {
-            channel.sendMessage("Invalid type. Valid types are: YouTube, and Reddit.").queue();
-            return;
-        }
-
-        if(type == FeedType.RSS/*&& !RssHandler.isValid(content)*/) {
-            channel.sendMessage("Invalid feed URL.").queue();
-            return;
-        }
-
-        omicron.getFeedManager().hasFeed(channel.getId(), parts[1]).thenAccept(removed -> {
-            if(removed) {
-                try {
-                    omicron.getFeedManager().addFeed(parts.length < 3 ? "" : parts[2], type, channel, parts[1]);
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                    channel.sendMessage("An error occured loading the feed.").queue();
-                }
-            } else {
-                omicron.getFeedManager().removeFeed(channel.getId(), parts[1]);
-                channel.sendMessage("Removed feed from: " + parts[1]).queue();
+        omicron.getCommandManager().getPrefix(message.getGuild().getIdLong()).thenAccept(prefix -> {
+            if (parts.length < 2) {
+                channel.sendMessage("Usage: **" +
+                        prefix + name +
+                        "** <type=youtube/reddit> <feed/user id/subreddit>").queue();
+                return;
             }
+            FeedType type;
+            try {
+                type = FeedType.valueOf(parts[0].toUpperCase());
+            } catch (IllegalArgumentException e) {
+                channel.sendMessage("Invalid type. Valid types are: YouTube, and Reddit.").queue();
+                return;
+            }
+
+            if (type == FeedType.RSS/*&& !RssHandler.isValid(content)*/) {
+                channel.sendMessage("Invalid feed URL.").queue();
+                return;
+            }
+
+            omicron.getFeedManager().hasFeed(channel.getId(), parts[1]).thenAccept(removed -> {
+                if (removed) {
+                    try {
+                        omicron.getFeedManager().addFeed(parts.length < 3 ? "" : parts[2], type, channel, parts[1]);
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                        channel.sendMessage("An error occured loading the feed.").queue();
+                    }
+                } else {
+                    omicron.getFeedManager().removeFeed(channel.getId(), parts[1]);
+                    channel.sendMessage("Removed feed from: " + parts[1]).queue();
+                }
+            });
         });
     }
 }

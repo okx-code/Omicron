@@ -40,37 +40,39 @@ public class EnableCommand extends Command {
 
         CommandManager commandManager = omicron.getCommandManager();
 
-        String commandName = content.replace(commandManager.getPrefix(), "");
-        Command disableCommand = null;
-        for(Command command : commandManager.getCommands()) {
-            if (command.getName().equalsIgnoreCase(commandName)) {
-                disableCommand = command;
-                break;
+        commandManager.getPrefix(guild.getIdLong()).thenAccept(prefix -> {
+            String commandName = content.replace(prefix, "");
+            Command disableCommand = null;
+            for (Command command : commandManager.getCommands()) {
+                if (command.getName().equalsIgnoreCase(commandName)) {
+                    disableCommand = command;
+                    break;
+                }
             }
-        }
 
-        if(disableCommand == null) {
-            channel.sendMessage("Cannot find command: " + commandName + ".").queue();
-            return;
-        }
-
-        String name = disableCommand.getName().toLowerCase();
-        if(name.equals("disable") || name.equals("enable") || name.equals("help")) {
-            channel.sendMessage("That command cannot be disabled!").queue();
-            return;
-        }
-
-        final Command lambdaDisableCommand = disableCommand;
-
-        long guildId = guild.getIdLong();
-        commandManager.isDisabled(guildId, disableCommand).thenAccept(b -> {
-            if(!b) {
-                channel.sendMessage("That command is not disabled!").queue();
+            if (disableCommand == null) {
+                channel.sendMessage("Cannot find command: " + commandName + ".").queue();
                 return;
             }
 
-            commandManager.setDisabled(lambdaDisableCommand, guildId, false);
-            channel.sendMessage("Enabled command: " + lambdaDisableCommand.getName()).queue();
+            String name = disableCommand.getName().toLowerCase();
+            if (name.equals("disable") || name.equals("enable") || name.equals("help")) {
+                channel.sendMessage("That command cannot be disabled!").queue();
+                return;
+            }
+
+            final Command lambdaDisableCommand = disableCommand;
+
+            long guildId = guild.getIdLong();
+            commandManager.isDisabled(guildId, disableCommand).thenAccept(b -> {
+                if (!b) {
+                    channel.sendMessage("That command is not disabled!").queue();
+                    return;
+                }
+
+                commandManager.setDisabled(lambdaDisableCommand, guildId, false);
+                channel.sendMessage("Enabled command: " + lambdaDisableCommand.getName()).queue();
+            });
         });
     }
 }
