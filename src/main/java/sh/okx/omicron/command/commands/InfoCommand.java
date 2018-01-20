@@ -24,6 +24,9 @@ public class InfoCommand extends Command {
                 "Library: [JDA](https://github.com/DV8FromTheWorld/JDA)\n" +
                 "Language: Java\n" +
                 "Source code: [GitHub](https://github.com/okx-code/Omicron)", false);
+        eb.addField("Stats",
+                "Guilds: **" + omicron.getJDA().getGuilds().size() + "**\n" +
+                        "", false);
 
         message.getChannel().sendMessage(eb.build()).queue();
     }
