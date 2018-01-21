@@ -103,7 +103,7 @@ public class RedditHandler implements FeedHandler {
             }
         };
 
-        new Timer().scheduleAtFixedRate(task, 0, 120*100); // TODO *1000
+        new Timer().scheduleAtFixedRate(task, 0, 120*1000);
     }
 
     @Override
