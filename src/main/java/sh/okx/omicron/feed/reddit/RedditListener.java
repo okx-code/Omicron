@@ -2,6 +2,7 @@ package sh.okx.omicron.feed.reddit;
 
 import net.dean.jraw.fluent.SubredditReference;
 import net.dean.jraw.models.Submission;
+import net.dean.jraw.models.Subreddit;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import org.apache.commons.text.StringEscapeUtils;
@@ -14,6 +15,8 @@ public class RedditListener extends AbstractRedditListener {
 
     @Override
     public void on(SubredditReference subreddit, Submission submission) {
+        Subreddit info = subreddit.info();
+        System.out.println(info.getDisplayName());
         EmbedBuilder eb = new EmbedBuilder()
                 .setAuthor("/u/" + submission.getAuthor(), "https://reddit.com/u/" + submission.getAuthor())
                 .setDescription(StringEscapeUtils.unescapeHtml4(Util.limit(submission.getSelftext(), 100)))

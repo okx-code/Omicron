@@ -14,6 +14,7 @@ import sh.okx.omicron.music.commands.*;
 import sh.okx.omicron.roles.RoleCommand;
 import sh.okx.omicron.trivia.TriviaCommand;
 import sh.okx.sql.api.Connection;
+import sh.okx.sql.api.SqlException;
 import sh.okx.sql.api.query.QueryResults;
 
 import java.sql.PreparedStatement;
@@ -124,24 +125,29 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public CompletableFuture<String> getPrefix(long guild) {
-        return omicron.runConnectionAsync(connection ->
-                connection.table("prefixes")
-                .select("prefix")
-                .where().prepareEquals("guild", guild).then()
-                .executeAsync()
-                .thenApply(qr -> {
-                    if(!qr.next()) {
-                        return "o/";
-                    }
+        try {
+            return omicron.runConnectionAsync(connection ->
+                    connection.table("prefixes")
+                            .select("prefix")
+                            .where().prepareEquals("guild", guild).then()
+                            .executeAsync()
+                            .thenApply(qr -> {
+                                if (!qr.next()) {
+                                    return "o/";
+                                }
 
-                    try {
-                        return qr.getResultSet().getString("prefix");
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                        return "o/";
-                    }
-                })
-        );
+                                try {
+                                    return qr.getResultSet().getString("prefix");
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                    return "o/";
+                                }
+                            })
+            );
+        } catch(SqlException ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     public void setPrefix(long guild, String prefix) {

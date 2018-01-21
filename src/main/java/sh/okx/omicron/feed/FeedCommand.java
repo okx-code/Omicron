@@ -58,17 +58,18 @@ public class FeedCommand extends Command {
                 return;
             }
 
-            omicron.getFeedManager().hasFeed(channel.getId(), parts[1]).thenAccept(removed -> {
-                if (removed) {
+            omicron.getFeedManager().hasFeed(channel.getId(), parts[1]).thenAccept(exists -> {
+                if (exists) {
+                    omicron.getFeedManager().removeFeed(channel.getId(), parts[1]);
+                    channel.sendMessage("Removed feed from: " + parts[1]).queue();
+                } else {
                     try {
                         omicron.getFeedManager().addFeed(parts.length < 3 ? "" : parts[2], type, channel, parts[1]);
+                        channel.sendMessage("Adding feed.").queue();
                     } catch (MalformedURLException e) {
                         e.printStackTrace();
                         channel.sendMessage("An error occured loading the feed.").queue();
                     }
-                } else {
-                    omicron.getFeedManager().removeFeed(channel.getId(), parts[1]);
-                    channel.sendMessage("Removed feed from: " + parts[1]).queue();
                 }
             });
         });

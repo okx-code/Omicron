@@ -10,11 +10,10 @@ import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
 import org.apache.commons.io.IOUtils;
-import sh.okx.omicron.Omicron;
 import sh.okx.omicron.feed.FeedHandler;
 import sh.okx.omicron.feed.FeedListener;
 
-import java.io.IOException;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
@@ -51,9 +50,9 @@ public class RedditHandler implements FeedHandler {
         String[] lines;
         try {
             lines = IOUtils
-                    .toString(Omicron.class.getResourceAsStream("/reddit_authentication.txt"), "UTF-8")
+                    .toString(new File("reddit_authentication.txt").toURI(), "UTF-8")
                     .split("\n");
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             cancelled = true;
             return;
@@ -104,7 +103,7 @@ public class RedditHandler implements FeedHandler {
             }
         };
 
-        new Timer().scheduleAtFixedRate(task, 0, 120*1000);
+        new Timer().scheduleAtFixedRate(task, 0, 120*100); // TODO *1000
     }
 
     @Override

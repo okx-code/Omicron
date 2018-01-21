@@ -10,7 +10,6 @@ import sh.okx.omicron.feed.rss.RssListener;
 import sh.okx.omicron.feed.youtube.YoutubeHandler;
 import sh.okx.omicron.feed.youtube.YoutubeListener;
 import sh.okx.sql.api.Connection;
-import sh.okx.sql.api.SqlException;
 import sh.okx.sql.api.database.ExecuteTable;
 import sh.okx.sql.api.query.QueryResults;
 
@@ -117,7 +116,7 @@ public class FeedManager {
 
                 statement.execute();
             } catch(SQLException e) {
-                throw new SqlException(e);
+                e.printStackTrace();
             }
         });
 
@@ -153,7 +152,9 @@ public class FeedManager {
             default:
                 return;
         }
+
         handler.addListener(listener);
+        listener.handlePrefix();
         handler.start();
 
         loadedHandlers.put(handler, listener);
