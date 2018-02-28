@@ -12,46 +12,46 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TokenCommand extends Command {
-    private Map<String, String> tokens = new HashMap<>();
+  private Map<String, String> tokens = new HashMap<>();
 
-    public TokenCommand(Omicron omicron) {
-        super(omicron, "token", Category.MISC,
-                "Link your discord account with your Minecraft account." +
-                        "Connect to `mc.okx.sh` to get a token and do " +
-                        "**o/token <token>** to verify your Minecraft account.");
+  public TokenCommand(Omicron omicron) {
+    super(omicron, "token", Category.MISC,
+        "Link your discord account with your Minecraft account." +
+            "Connect to `mc.okx.sh` to get a token and do " +
+            "**o/token <token>** to verify your Minecraft account.");
 
-        subscribe();
+    subscribe();
+  }
+
+  private void subscribe() {
+    Jedis subscriber = new Jedis("localhost", 6379);
+    subscriber.connect();
+
+    new Thread(() -> subscriber.subscribe(new JedisPubSub() {
+      @Override
+      public void onMessage(String channel, String message) {
+        String[] parts = message.split(" ");
+        tokens.put(parts[1], parts[0]);
+      }
+    }, "token")).start();
+  }
+
+  @Override
+  public void run(Message message, String content) {
+    MessageChannel channel = message.getChannel();
+
+    if (content.isEmpty()) {
+      channel.sendMessage(description).queue();
+      return;
     }
 
-    private void subscribe() {
-        Jedis subscriber = new Jedis("localhost", 6379);
-        subscriber.connect();
-
-        new Thread(() -> subscriber.subscribe(new JedisPubSub() {
-            @Override
-            public void onMessage(String channel, String message) {
-                String[] parts = message.split(" ");
-                tokens.put(parts[1], parts[0]);
-            }
-        }, "token")).start();
+    String name = tokens.remove(content);
+    if (name == null) {
+      channel.sendMessage("Invalid token!").queue();
+      return;
     }
 
-    @Override
-    public void run(Message message, String content) {
-        MessageChannel channel = message.getChannel();
-
-        if(content.isEmpty()) {
-            channel.sendMessage(description).queue();
-            return;
-        }
-
-        String name = tokens.remove(content);
-        if(name == null) {
-            channel.sendMessage("Invalid token!").queue();
-            return;
-        }
-
-        omicron.getMinecraftManager().setUsername(message.getAuthor().getIdLong(), name);
-        channel.sendMessage("Linked Minecraft account: " + name).queue();
-    }
+    omicron.getMinecraftManager().setUsername(message.getAuthor().getIdLong(), name);
+    channel.sendMessage("Linked Minecraft account: " + name).queue();
+  }
 }

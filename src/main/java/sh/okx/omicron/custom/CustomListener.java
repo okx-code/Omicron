@@ -6,27 +6,27 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import sh.okx.omicron.Omicron;
 
 public class CustomListener extends ListenerAdapter {
-    private Omicron omicron;
+  private Omicron omicron;
 
 
-    public CustomListener(Omicron omicron) {
-        this.omicron = omicron;
+  public CustomListener(Omicron omicron) {
+    this.omicron = omicron;
+  }
+
+  @Override
+  public void onMessageReceived(MessageReceivedEvent e) {
+    Member member = e.getMember();
+    if (member == null || member.getUser() == null || member.getUser().isFake() || member.getUser().isBot()) {
+      return;
     }
 
-    @Override
-    public void onMessageReceived(MessageReceivedEvent e) {
-        Member member = e.getMember();
-        if(member == null || member.getUser() == null || member.getUser().isFake() || member.getUser().isBot()) {
+    omicron.getCustomManager()
+        .getCommand(e.getGuild().getIdLong(), member, e.getMessage().getContentRaw())
+        .thenAccept(createdCustomCommand -> {
+          if (createdCustomCommand == null) {
             return;
-        }
-
-        omicron.getCustomManager()
-                .getCommand(e.getGuild().getIdLong(), member, e.getMessage().getContentRaw())
-                .thenAccept(createdCustomCommand -> {
-            if(createdCustomCommand == null) {
-                return;
-            }
-            e.getChannel().sendMessage(createdCustomCommand.getResponse()).queue();
+          }
+          e.getChannel().sendMessage(createdCustomCommand.getResponse()).queue();
         });
-    }
+  }
 }

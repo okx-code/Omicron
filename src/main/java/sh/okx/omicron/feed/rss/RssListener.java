@@ -10,24 +10,24 @@ import sh.okx.omicron.util.Util;
 import java.util.List;
 
 public class RssListener extends AbstractRssListener {
-    public RssListener(String prefix, MessageChannel channel) {
-        super(prefix, channel);
-    }
+  public RssListener(String prefix, MessageChannel channel) {
+    super(prefix, channel);
+  }
 
-    @Override
-    public void on(SyndFeed feed, SyndEntry entry) {
-        EmbedBuilder eb = new EmbedBuilder();
+  @Override
+  public void on(SyndFeed feed, SyndEntry entry) {
+    EmbedBuilder eb = new EmbedBuilder();
 
-        eb.setTitle(entry.getTitle(), entry.getLink());
-        List<SyndPerson> authors = entry.getAuthors();
-        SyndPerson author = authors.get(0);
+    eb.setTitle(entry.getTitle(), entry.getLink());
+    List<SyndPerson> authors = entry.getAuthors();
+    SyndPerson author = authors.get(0);
 
-        eb.setAuthor(author.getName(), author.getUri());
+    eb.setAuthor(author.getName(), author.getUri());
 
-        eb.setDescription(Util.limit(Util.stripHtml(entry.getDescription().getValue()), 100));
+    eb.setDescription(Util.limit(Util.stripHtml(entry.getDescription().getValue()), 100));
 
-        eb.setFooter(feed.getTitle(), null);
+    eb.setFooter(feed.getTitle(), null);
 
-        channel.sendMessage(eb.build()).queue();
-    }
+    channel.sendMessage(eb.build()).queue();
+  }
 }

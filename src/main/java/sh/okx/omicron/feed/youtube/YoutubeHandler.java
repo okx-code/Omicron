@@ -13,83 +13,88 @@ import sh.okx.omicron.feed.FeedListener;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class YoutubeHandler implements FeedHandler {
-    private long lastChecked = -1;
-    private boolean cancelled;
-    private TimerTask task;
-    private String id;
+  private long lastChecked = -1;
+  private boolean cancelled;
+  private TimerTask task;
+  private String id;
 
-    private Set<AbstractYoutubeListener> listeners = new HashSet<>();
+  private Set<AbstractYoutubeListener> listeners = new HashSet<>();
 
-    public void addListener(FeedListener listener) {
-        listeners.add((AbstractYoutubeListener) listener);
-    }
+  public void addListener(FeedListener listener) {
+    listeners.add((AbstractYoutubeListener) listener);
+  }
 
-    @Override
-    public String getContent() {
-        return id;
-    }
+  @Override
+  public String getContent() {
+    return id;
+  }
 
-    public YoutubeHandler(String id) {
-        this.id = id;
-        task = new TimerTask() {
-            @Override
-            public void run() {
-                YouTube youtube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(), request -> {})
-                        .setApplicationName("omicron-okx").build();
+  public YoutubeHandler(String id) {
+    this.id = id;
+    task = new TimerTask() {
+      @Override
+      public void run() {
+        YouTube youtube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(), request -> {
+        })
+            .setApplicationName("omicron-okx").build();
 
-                try {
-                    YouTube.Search.List search = youtube.search().list("id,snippet");
-                    search.setKey(IOUtils.toString(new File("google_api_key.txt").toURI(), "UTF-8"));
-                    search.setChannelId(id);
-                    search.setOrder("date");
-                    search.setMaxResults(20L);
-                    search.setType("video");
+        try {
+          YouTube.Search.List search = youtube.search().list("id,snippet");
+          search.setKey(IOUtils.toString(new File("google_api_key.txt").toURI(), "UTF-8"));
+          search.setChannelId(id);
+          search.setOrder("date");
+          search.setMaxResults(20L);
+          search.setType("video");
 
-                    SearchListResponse searchResponse = search.execute();
-                    List<SearchResult> results = searchResponse.getItems();
-                    if(lastChecked < 0) {
-                        lastChecked = results.get(0).getSnippet().getPublishedAt().getValue();
-                    }
+          SearchListResponse searchResponse = search.execute();
+          List<SearchResult> results = searchResponse.getItems();
+          if (lastChecked < 0) {
+            lastChecked = results.get(0).getSnippet().getPublishedAt().getValue();
+          }
 
-                    for(SearchResult result : results) {
-                        SearchResultSnippet snippet = result.getSnippet();
-                        if(Long.compare(snippet.getPublishedAt().getValue(), lastChecked) <= 0) {
-                            continue;
-                        }
-
-                        listeners.forEach(listener -> {
-                            listener.handlePrefix();
-                            listener.on(result.getId(), snippet);
-                        });
-                    }
-
-                    lastChecked = results.get(0).getSnippet().getPublishedAt().getValue();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+          for (SearchResult result : results) {
+            SearchResultSnippet snippet = result.getSnippet();
+            if (Long.compare(snippet.getPublishedAt().getValue(), lastChecked) <= 0) {
+              continue;
             }
-        };
-    }
 
-    @Override
-    public void cancel() {
-        cancelled = task.cancel();
-    }
+            listeners.forEach(listener -> {
+              listener.handlePrefix();
+              listener.on(result.getId(), snippet);
+            });
+          }
 
-    @Override
-    public void start() {
-        new Timer().scheduleAtFixedRate(task, 0, 120*1000);
-    }
+          lastChecked = results.get(0).getSnippet().getPublishedAt().getValue();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    };
+  }
 
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
-    }
+  @Override
+  public void cancel() {
+    cancelled = task.cancel();
+  }
 
-    private int compare(DateTime thisTime, DateTime anotherTime) {
-        return Long.compare(thisTime.getValue(), anotherTime.getValue());
-    }
+  @Override
+  public void start() {
+    new Timer().scheduleAtFixedRate(task, 0, 120 * 1000);
+  }
+
+  @Override
+  public boolean isCancelled() {
+    return cancelled;
+  }
+
+  private int compare(DateTime thisTime, DateTime anotherTime) {
+    return Long.compare(thisTime.getValue(), anotherTime.getValue());
+  }
 }

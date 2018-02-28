@@ -1,4 +1,3 @@
-
 package sh.okx.omicron.command.commands;
 
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -16,96 +15,96 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class HelpCommand extends Command {
-    public HelpCommand(Omicron omicron) {
-        super(omicron, "help", Category.MISC, "Display information about each of the bot's commands.");
-    }
+  public HelpCommand(Omicron omicron) {
+    super(omicron, "help", Category.MISC, "Display information about each of the bot's commands.");
+  }
 
-    @Override
-    public void run(Message message, String oldContent) {
-        Guild guild = message.getGuild();
-        MessageChannel channel = message.getChannel();
+  @Override
+  public void run(Message message, String oldContent) {
+    Guild guild = message.getGuild();
+    MessageChannel channel = message.getChannel();
 
-        omicron.getCommandManager().getPrefix(message.getGuild().getIdLong()).thenAccept(prefix -> {
-            String content = oldContent.replaceFirst(prefix, "");
+    omicron.getCommandManager().getPrefix(message.getGuild().getIdLong()).thenAccept(prefix -> {
+      String content = oldContent.replaceFirst(prefix, "");
 
-            EmbedBuilder eb = new EmbedBuilder();
+      EmbedBuilder eb = new EmbedBuilder();
 
-            Command[] commands = omicron.getCommandManager().getCommands();
+      Command[] commands = omicron.getCommandManager().getCommands();
 
-            if (!content.isEmpty()) {
-                eb.setFooter("<> is required, [] is optional.", null);
+      if (!content.isEmpty()) {
+        eb.setFooter("<> is required, [] is optional.", null);
 
-                for (Command command : commands) {
-                    boolean isAlias = false;
-                    for (String alias : command.getAliases()) {
-                        if (alias.equalsIgnoreCase(content)) {
-                            isAlias = true;
-                            break;
-                        }
-                    }
+        for (Command command : commands) {
+          boolean isAlias = false;
+          for (String alias : command.getAliases()) {
+            if (alias.equalsIgnoreCase(content)) {
+              isAlias = true;
+              break;
+            }
+          }
 
-                    if (isAlias || command.getName().equalsIgnoreCase(content)) {
-                        eb.setTitle(prefix + command.getName());
-                        eb.setDescription(command.getDescription());
+          if (isAlias || command.getName().equalsIgnoreCase(content)) {
+            eb.setTitle(prefix + command.getName());
+            eb.setDescription(command.getDescription());
 
-                        String[] aliases = command.getAliases();
-                        if (aliases.length > 0) {
-                            eb.addField("Aliases", String.join("\t", aliases), false);
-                        }
-
-                        channel.sendMessage(eb.build()).queue();
-                        return;
-                    }
-                }
-
-                eb.setTitle("Invalid command");
-                eb.setDescription("Cannot find command '" + content + "'.");
-
-                channel.sendMessage(eb.build()).queue();
-                return;
+            String[] aliases = command.getAliases();
+            if (aliases.length > 0) {
+              eb.addField("Aliases", String.join("\t", aliases), false);
             }
 
-            CompletableFuture.runAsync(() -> {
-                eb.setTitle("Omicron");
-                eb.setFooter("Use " + prefix + name + " <command> to get help with a specific command, eg " +
-                        prefix + name + " feed.", null);
+            channel.sendMessage(eb.build()).queue();
+            return;
+          }
+        }
 
-                try (Connection connection = omicron.getConnection()) {
-                    Set<Command> disabledCommands = new HashSet<>();
-                    for (Category category : Category.values()) {
-                        StringBuilder description = new StringBuilder();
-                        for (Command command : commands) {
-                            if (command.getName().equals("restart") && !omicron.isDeveloper(message.getAuthor().getIdLong())) {
-                                continue;
-                            }
+        eb.setTitle("Invalid command");
+        eb.setDescription("Cannot find command '" + content + "'.");
 
-                            if (guild != null && omicron.getCommandManager().isDisabled(connection,
-                                    guild.getIdLong(), command).join()) {
-                                disabledCommands.add(command);
-                                continue;
-                            }
+        channel.sendMessage(eb.build()).queue();
+        return;
+      }
 
-                            if (command.getCategory() != category) {
-                                continue;
-                            }
+      CompletableFuture.runAsync(() -> {
+        eb.setTitle("Omicron");
+        eb.setFooter("Use " + prefix + name + " <command> to get help with a specific command, eg " +
+            prefix + name + " feed.", null);
 
-                            description.append(prefix).append(command.getName()).append("\t");
-                        }
+        try (Connection connection = omicron.getConnection()) {
+          Set<Command> disabledCommands = new HashSet<>();
+          for (Category category : Category.values()) {
+            StringBuilder description = new StringBuilder();
+            for (Command command : commands) {
+              if (command.getName().equals("restart") && !omicron.isDeveloper(message.getAuthor().getIdLong())) {
+                continue;
+              }
 
-                        eb.addField(category.toString(), description.toString().trim(), false);
-                    }
+              if (guild != null && omicron.getCommandManager().isDisabled(connection,
+                  guild.getIdLong(), command).join()) {
+                disabledCommands.add(command);
+                continue;
+              }
 
-                    if (guild != null && message.getMember().hasPermission(Permission.MANAGE_SERVER) && !disabledCommands.isEmpty()) {
-                        StringBuilder disabled = new StringBuilder();
-                        for (Command disabledCommand : disabledCommands) {
-                            disabled.append(prefix).append(disabledCommand.getName()).append("\t");
-                        }
-                        eb.addField("Disabled", disabled.toString().trim(), false);
-                    }
+              if (command.getCategory() != category) {
+                continue;
+              }
 
-                    channel.sendMessage(eb.build()).queue();
-                }
-            });
-        });
-    }
+              description.append(prefix).append(command.getName()).append("\t");
+            }
+
+            eb.addField(category.toString(), description.toString().trim(), false);
+          }
+
+          if (guild != null && message.getMember().hasPermission(Permission.MANAGE_SERVER) && !disabledCommands.isEmpty()) {
+            StringBuilder disabled = new StringBuilder();
+            for (Command disabledCommand : disabledCommands) {
+              disabled.append(prefix).append(disabledCommand.getName()).append("\t");
+            }
+            eb.addField("Disabled", disabled.toString().trim(), false);
+          }
+
+          channel.sendMessage(eb.build()).queue();
+        }
+      });
+    });
+  }
 }

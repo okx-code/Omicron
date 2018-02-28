@@ -10,7 +10,10 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.managers.AudioManager;
 import sh.okx.omicron.Omicron;
 
@@ -23,100 +26,100 @@ import java.util.Map;
 import java.util.TimeZone;
 
 public class MusicManager {
-    private Omicron omicron;
+  private Omicron omicron;
 
-    private final AudioPlayerManager playerManager;
-    private final Map<Long, GuildMusicManager> musicManagers;
+  private final AudioPlayerManager playerManager;
+  private final Map<Long, GuildMusicManager> musicManagers;
 
-    public MusicManager(Omicron omicron) {
-        this.omicron = omicron;
-        this.musicManagers = new HashMap<>();
+  public MusicManager(Omicron omicron) {
+    this.omicron = omicron;
+    this.musicManagers = new HashMap<>();
 
-        this.playerManager = new DefaultAudioPlayerManager();
-        AudioSourceManagers.registerRemoteSources(playerManager);
-        AudioSourceManagers.registerLocalSource(playerManager);
+    this.playerManager = new DefaultAudioPlayerManager();
+    AudioSourceManagers.registerRemoteSources(playerManager);
+    AudioSourceManagers.registerLocalSource(playerManager);
 
-        omicron.getJDA().addEventListener(new MusicListener(omicron));
+    omicron.getJDA().addEventListener(new MusicListener(omicron));
+  }
+
+  public synchronized GuildMusicManager getGuildAudioPlayer(Guild guild) {
+    long guildId = guild.getIdLong();
+    GuildMusicManager musicManager = musicManagers.get(guildId);
+
+    if (musicManager == null) {
+      musicManager = new GuildMusicManager(omicron, guild, playerManager);
+      musicManagers.put(guildId, musicManager);
     }
 
-    public synchronized GuildMusicManager getGuildAudioPlayer(Guild guild) {
-        long guildId = guild.getIdLong();
-        GuildMusicManager musicManager = musicManagers.get(guildId);
+    guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
 
-        if (musicManager == null) {
-            musicManager = new GuildMusicManager(omicron, guild, playerManager);
-            musicManagers.put(guildId, musicManager);
-        }
+    return musicManager;
+  }
 
-        guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
+  public void skip(Guild guild) {
+    GuildMusicManager musicManager = getGuildAudioPlayer(guild);
+    musicManager.scheduler.nextTrack();
+  }
 
-        return musicManager;
+  public AudioTrack getPlaying(Guild guild) {
+    GuildMusicManager musicManager = getGuildAudioPlayer(guild);
+    return musicManager.player.getPlayingTrack();
+  }
+
+  public void loadAndPlay(Member requester, final TextChannel channel, final String trackUrl) {
+    GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+
+
+    Video video;
+    if (trackUrl.matches("https?://(www\\.)?youtube\\.com/watch\\?v=[A-z0-9\\-_]+(&.*)?")) {
+      video = YoutubeAPI.getVideo(trackUrl.split("\\?v=")[1]);
+    } else {
+      ResourceId resourceId = YoutubeAPI.search(trackUrl);
+      if (resourceId == null) {
+        channel.sendMessage("No results found by **" + trackUrl + "**.").queue();
+        return;
+      }
+      video = YoutubeAPI.getVideo(resourceId.getVideoId());
     }
 
-    public void skip(Guild guild) {
-        GuildMusicManager musicManager = getGuildAudioPlayer(guild);
-        musicManager.scheduler.nextTrack();
+    if (video == null) {
+      channel.sendMessage("An unknown error occurred trying to get the video. " +
+          "This has been reported to the developers.").queue();
+      return;
     }
 
-    public AudioTrack getPlaying(Guild guild) {
-        GuildMusicManager musicManager = getGuildAudioPlayer(guild);
-        return musicManager.player.getPlayingTrack();
-    }
 
-    public void loadAndPlay(Member requester, final TextChannel channel, final String trackUrl) {
-        GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+    AudioTrack current = musicManager.player.getPlayingTrack();
+    long millis = musicManager.scheduler.getQueue()
+        .stream()
+        .mapToLong(t -> t.getTrack().getDuration())
+        .sum() + (current == null ? 0 : current.getInfo().length);
+    playerManager.loadItemOrdered(musicManager,
+        "https://youtube.com/watch?v=" + video.getId(), new AudioLoadResultHandler() {
+          @Override
+          public void trackLoaded(AudioTrack track) {
+            if (!play(requester, channel, musicManager, new TrackData(track, requester.getUser()))) {
+              channel.sendMessage("Could not connect to any voice channels. Do I have permission? " +
+                  "Do any exist?").queue();
+            } else {
+              EmbedBuilder eb = new EmbedBuilder();
+              eb.setAuthor(video.getSnippet().getChannelTitle(),
+                  "https://youtube.com/channel/" + video.getSnippet().getChannelId());
+              eb.setTitle(video.getSnippet().getTitle(),
+                  "https://youtube.com/watch?v=" + video.getId());
+              eb.addField("Estimated Wait Time",
+                  formatTime(millis), true);
+              eb.addField("Length", formatTime(track.getInfo().length), true);
+              eb.setThumbnail(video.getSnippet().getThumbnails().getHigh().getUrl());
+              eb.setColor(Color.WHITE);
+              eb.setTimestamp(Instant.ofEpochMilli(video.getSnippet().getPublishedAt().getValue()));
 
-
-        Video video;
-        if(trackUrl.matches("https?://(www\\.)?youtube\\.com/watch\\?v=[A-z0-9\\-_]+(&.*)?")) {
-            video = YoutubeAPI.getVideo(trackUrl.split("\\?v=")[1]);
-        } else {
-            ResourceId resourceId = YoutubeAPI.search(trackUrl);
-            if(resourceId == null) {
-                channel.sendMessage("No results found by **" + trackUrl + "**.").queue();
-                return;
+              channel.sendMessage(eb.build()).queue();
             }
-            video = YoutubeAPI.getVideo(resourceId.getVideoId());
-        }
+          }
 
-        if(video == null) {
-            channel.sendMessage("An unknown error occurred trying to get the video. " +
-                    "This has been reported to the developers.").queue();
-            return;
-        }
-
-
-        AudioTrack current = musicManager.player.getPlayingTrack();
-        long millis = musicManager.scheduler.getQueue()
-                .stream()
-                .mapToLong(t -> t.getTrack().getDuration())
-                .sum() + (current == null ? 0 : current.getInfo().length);
-        playerManager.loadItemOrdered(musicManager,
-                "https://youtube.com/watch?v=" + video.getId(), new AudioLoadResultHandler() {
-            @Override
-            public void trackLoaded(AudioTrack track) {
-                if(!play(requester, channel, musicManager, new TrackData(track, requester.getUser()))) {
-                    channel.sendMessage("Could not connect to any voice channels. Do I have permission? " +
-                            "Do any exist?").queue();
-                } else {
-                    EmbedBuilder eb = new EmbedBuilder();
-                    eb.setAuthor(video.getSnippet().getChannelTitle(),
-                            "https://youtube.com/channel/" + video.getSnippet().getChannelId());
-                    eb.setTitle(video.getSnippet().getTitle(),
-                            "https://youtube.com/watch?v=" + video.getId());
-                    eb.addField("Estimated Wait Time",
-                            formatTime(millis), true);
-                    eb.addField("Length", formatTime(track.getInfo().length), true);
-                    eb.setThumbnail(video.getSnippet().getThumbnails().getHigh().getUrl());
-                    eb.setColor(Color.WHITE);
-                    eb.setTimestamp(Instant.ofEpochMilli(video.getSnippet().getPublishedAt().getValue()));
-
-                    channel.sendMessage(eb.build()).queue();
-                }
-            }
-
-            @Override
-            public void playlistLoaded(AudioPlaylist playlist) {
+          @Override
+          public void playlistLoaded(AudioPlaylist playlist) {
                 /*AudioTrack firstTrack = playlist.getSelectedTrack();
 
                 if (firstTrack == null) {
@@ -129,60 +132,61 @@ public class MusicManager {
 
                 }*/
 
-                channel.sendMessage("Playlists currently unsupported").queue();
-            }
+            channel.sendMessage("Playlists currently unsupported").queue();
+          }
 
-            @Override
-            public void noMatches() {
-                channel.sendMessage("An unknown error occured when getting " + trackUrl + ".").queue();
-            }
+          @Override
+          public void noMatches() {
+            channel.sendMessage("An unknown error occured when getting " + trackUrl + ".").queue();
+          }
 
-            @Override
-            public void loadFailed(FriendlyException exception) {
-                channel.sendMessage("Could not play: " + exception.getMessage()).queue();
-            }
+          @Override
+          public void loadFailed(FriendlyException exception) {
+            channel.sendMessage("Could not play: " + exception.getMessage()).queue();
+          }
         });
+  }
+
+  private boolean play(Member member, TextChannel channel, GuildMusicManager musicManager, TrackData track) {
+    if (member.getVoiceState().inVoiceChannel()) {
+      channel.getGuild().getAudioManager().openAudioConnection(member.getVoiceState().getChannel());
+    } else if (!connectToFirstVoiceChannel(channel.getGuild().getAudioManager())) {
+      return false;
     }
 
-    private boolean play(Member member, TextChannel channel, GuildMusicManager musicManager, TrackData track) {
-        if(member.getVoiceState().inVoiceChannel()) {
-            channel.getGuild().getAudioManager().openAudioConnection(member.getVoiceState().getChannel());
-        } else if(!connectToFirstVoiceChannel(channel.getGuild().getAudioManager())) {
-            return false;
+    musicManager.scheduler.queue(track);
+    return true;
+  }
+
+  public void leave(Guild guild) {
+    guild.getAudioManager().closeAudioConnection();
+  }
+
+  private boolean connectToFirstVoiceChannel(AudioManager audioManager) {
+    if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect()) {
+      for (VoiceChannel voiceChannel : audioManager.getGuild().getVoiceChannels()) {
+        try {
+          audioManager.openAudioConnection(voiceChannel);
+          return true;
+        } catch (Exception ignored) {
         }
+      }
 
-        musicManager.scheduler.queue(track);
-        return true;
+      return false;
     }
 
-    public void leave(Guild guild) {
-        guild.getAudioManager().closeAudioConnection();
+    return true;
+  }
+
+  public String formatTime(long millis) {
+    SimpleDateFormat df;
+    if (millis > 1000 * 60 * 60) {
+      df = new SimpleDateFormat("hh:mm:ss");
+    } else {
+      df = new SimpleDateFormat("mm:ss");
     }
-
-    private boolean connectToFirstVoiceChannel(AudioManager audioManager) {
-        if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect()) {
-            for (VoiceChannel voiceChannel : audioManager.getGuild().getVoiceChannels()) {
-                try {
-                    audioManager.openAudioConnection(voiceChannel);
-                    return true;
-                } catch(Exception ignored) { }
-            }
-
-            return false;
-        }
-
-        return true;
-    }
-
-    public String formatTime(long millis) {
-        SimpleDateFormat df;
-        if(millis > 1000*60*60) {
-            df = new SimpleDateFormat("hh:mm:ss");
-        } else {
-            df = new SimpleDateFormat("mm:ss");
-        }
-        df.setTimeZone(TimeZone.getTimeZone("GMT"));
-        Date date = new Date(millis);
-        return df.format(date);
-    }
+    df.setTimeZone(TimeZone.getTimeZone("GMT"));
+    Date date = new Date(millis);
+    return df.format(date);
+  }
 }

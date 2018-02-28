@@ -6,9 +6,9 @@ import net.dv8tion.jda.core.entities.MessageChannel;
 import sh.okx.omicron.feed.FeedListener;
 
 public abstract class AbstractYoutubeListener extends FeedListener {
-    public AbstractYoutubeListener(String prefix, MessageChannel channel) {
-        super(prefix, channel);
-    }
+  public AbstractYoutubeListener(String prefix, MessageChannel channel) {
+    super(prefix, channel);
+  }
 
-    public abstract void on(ResourceId id, SearchResultSnippet result);
+  public abstract void on(ResourceId id, SearchResultSnippet result);
 }

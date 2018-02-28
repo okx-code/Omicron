@@ -30,142 +30,146 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class Omicron {
-    public static void main(String[] args) throws IOException, LoginException,
-            InterruptedException, RateLimitedException {
-        JDA jda = new JDABuilder(AccountType.BOT)
-                .setToken(IOUtils.toString(new File("token.txt").toURI(), "UTF-8").trim())
-                .setGame(Game.of(Game.GameType.DEFAULT, "o/help"))
-                .buildBlocking();
+  public static void main(String[] args) throws IOException, LoginException,
+      InterruptedException, RateLimitedException {
+    JDA jda = new JDABuilder(AccountType.BOT)
+        .setToken(IOUtils.toString(new File("token.txt").toURI(), "UTF-8").trim())
+        .setGame(Game.of(Game.GameType.DEFAULT, "o/help"))
+        .buildBlocking();
 
-        File shutdownChannel = new File("shutdown_channel.txt");
-        if(shutdownChannel.exists()) {
-            String channelId = IOUtils.toString(shutdownChannel.toURI(), "UTF-8");
-            TextChannel channel = jda.getTextChannelById(channelId);
-            if(channel != null) {
-                channel.sendMessage("Successfully restarted!").queue();
-            }
-            shutdownChannel.delete();
-        }
-
-        new Omicron(jda);
+    File shutdownChannel = new File("shutdown_channel.txt");
+    if (shutdownChannel.exists()) {
+      String channelId = IOUtils.toString(shutdownChannel.toURI(), "UTF-8");
+      TextChannel channel = jda.getTextChannelById(channelId);
+      if (channel != null) {
+        channel.sendMessage("Successfully restarted!").queue();
+      }
+      shutdownChannel.delete();
     }
 
-    private JDA jda;
-    private FeedManager feedManager;
-    private TriviaManager triviaManager;
-    private MusicManager musicManager;
-    private CommandManager commandManager;
-    private RoleManager roleManager;
-    private CustomManager customManager;
-    private EvaluateManager evaluateManager;
-    private MinecraftManager minecraftManager;
-    private LoggingManager loggingManager;
+    new Omicron(jda);
+  }
 
-    private PooledConnection connectionPool;
+  private JDA jda;
+  private FeedManager feedManager;
+  private TriviaManager triviaManager;
+  private MusicManager musicManager;
+  private CommandManager commandManager;
+  private RoleManager roleManager;
+  private CustomManager customManager;
+  private EvaluateManager evaluateManager;
+  private MinecraftManager minecraftManager;
+  private LoggingManager loggingManager;
 
-    public Omicron(JDA jda) throws IOException {
-        this.jda = jda;
-        connect();
-        setupManagers();
-    }
+  private PooledConnection connectionPool;
 
-    private void connect() throws IOException {
-        connectionPool = new ConnectionBuilder()
-                .setCredentials("root",
-                        IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim())
-                .setDatabase("omicron")
-                .buildPool();
-    }
+  public Omicron(JDA jda) throws IOException {
+    this.jda = jda;
+    connect();
+    setupManagers();
+  }
 
-    private void setupManagers() {
-        this.feedManager = new FeedManager(this);
-        this.triviaManager = new TriviaManager(this);
-        this.musicManager = new MusicManager(this);
-        this.commandManager = new CommandManager("o/", this);
-        this.roleManager = new RoleManager(this);
-        this.customManager = new CustomManager(this);
-        this.evaluateManager = new EvaluateManager();
-        this.minecraftManager = new MinecraftManager(this);
-        this.loggingManager = new LoggingManager(this);
-    }
+  private void connect() throws IOException {
+    connectionPool = new ConnectionBuilder()
+        .setCredentials("root",
+            IOUtils.toString(new File("db_password.txt").toURI(), "UTF-8").trim())
+        .setDatabase("omicron")
+        .buildPool();
+  }
 
-    /**
-     * Get a connection from the pool.
-     * This must be closed!
-     * @return A connection form the pool.
-     */
-    public Connection getConnection() {
-        return connectionPool.getConnection();
-    }
+  private void setupManagers() {
+    this.feedManager = new FeedManager(this);
+    this.triviaManager = new TriviaManager(this);
+    this.musicManager = new MusicManager(this);
+    this.commandManager = new CommandManager("o/", this);
+    this.roleManager = new RoleManager(this);
+    this.customManager = new CustomManager(this);
+    this.evaluateManager = new EvaluateManager();
+    this.minecraftManager = new MinecraftManager(this);
+    this.loggingManager = new LoggingManager(this);
+  }
 
-    /**
-     * Run a {@link Consumer} and close the connection to return it to the pool.
-     * @param consumer The synchronous operation(s) on the {@link Connection}.
-     */
-    public void runConnection(Consumer<Connection> consumer) {
-        Connection connection = getConnection();
-        consumer.accept(connection);
-        connection.close();
-    }
+  /**
+   * Get a connection from the pool.
+   * This must be closed!
+   *
+   * @return a connection from the pool.
+   */
+  public Connection getConnection() {
+    return connectionPool.getConnection();
+  }
 
-    /**
-     * Run a {@link Function} asynchronously and then close the connection to return it to the pool.
-     * @param function The asynchronous operation(s) on the {@link Connection}.
-     */
-    public <T> CompletableFuture<T> runConnectionAsync(Function<Connection, CompletableFuture<T>> function) {
-        Connection connection = getConnection();
-        return function.apply(connection).whenComplete((a, b) -> connection.close());
-    }
+  /**
+   * Run a {@link Consumer} and close the connection to return it to the pool.
+   *
+   * @param consumer The synchronous operation(s) on the {@link Connection}.
+   */
+  public void runConnection(Consumer<Connection> consumer) {
+    Connection connection = getConnection();
+    consumer.accept(connection);
+    connection.close();
+  }
 
-    public Logger getLogger() {
-        return LoggerFactory.getLogger(this.getClass());
-    }
+  /**
+   * Run a {@link Function} asynchronously and then close the connection to return it to the pool.
+   *
+   * @param function The asynchronous operation(s) on the {@link Connection}.
+   */
+  public <T> CompletableFuture<T> runConnectionAsync(Function<Connection, CompletableFuture<T>> function) {
+    Connection connection = getConnection();
+    return function.apply(connection).whenComplete((a, b) -> connection.close());
+  }
 
-    public boolean isDeveloper(long id) {
-        return id == 115090410849828865L || id == 181103798616326144L;
-    }
+  public Logger getLogger() {
+    return LoggerFactory.getLogger(this.getClass());
+  }
 
-    /**
-     * This is the recommended way to get a JDA object
-     * @return A copy of the JDA object
-     */
-    public JDA getJDA() {
-        return jda;
-    }
+  public boolean isDeveloper(long id) {
+    return id == 115090410849828865L || id == 181103798616326144L;
+  }
 
-    public CustomManager getCustomManager() {
-        return customManager;
-    }
+  /**
+   * This is the recommended way to get a JDA object
+   *
+   * @return A copy of the JDA object
+   */
+  public JDA getJDA() {
+    return jda;
+  }
 
-    public FeedManager getFeedManager() {
-        return feedManager;
-    }
+  public CustomManager getCustomManager() {
+    return customManager;
+  }
 
-    public RoleManager getRoleManager() {
-        return roleManager;
-    }
+  public FeedManager getFeedManager() {
+    return feedManager;
+  }
 
-    public TriviaManager getTriviaManager() {
-        return triviaManager;
-    }
+  public RoleManager getRoleManager() {
+    return roleManager;
+  }
 
-    public MusicManager getMusicManager() {
-        return musicManager;
-    }
+  public TriviaManager getTriviaManager() {
+    return triviaManager;
+  }
 
-    public CommandManager getCommandManager() {
-        return commandManager;
-    }
+  public MusicManager getMusicManager() {
+    return musicManager;
+  }
 
-    public EvaluateManager getEvaluateManager() {
-        return evaluateManager;
-    }
+  public CommandManager getCommandManager() {
+    return commandManager;
+  }
 
-    public MinecraftManager getMinecraftManager() {
-        return minecraftManager;
-    }
+  public EvaluateManager getEvaluateManager() {
+    return evaluateManager;
+  }
 
-    public LoggingManager getLoggingManager() {
-        return loggingManager;
-    }
+  public MinecraftManager getMinecraftManager() {
+    return minecraftManager;
+  }
+
+  public LoggingManager getLoggingManager() {
+    return loggingManager;
+  }
 }

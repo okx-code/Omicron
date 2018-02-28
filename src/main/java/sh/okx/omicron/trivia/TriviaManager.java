@@ -6,25 +6,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TriviaManager {
-    private Omicron omicron;
+  private Omicron omicron;
 
-    private Map<Long, String> answers = new HashMap<>();
+  private Map<Long, String> answers = new HashMap<>();
 
-    public TriviaManager(Omicron omicron) {
-        this.omicron = omicron;
+  public TriviaManager(Omicron omicron) {
+    this.omicron = omicron;
 
-        omicron.getJDA().addEventListener(new TriviaListener(omicron));
-    }
+    omicron.getJDA().addEventListener(new TriviaListener(omicron));
+  }
 
-    public void addAnswer(long message, String answer) {
-        answers.put(message, answer);
-    }
+  public void addAnswer(long message, String answer) {
+    answers.put(message, answer);
+  }
 
-    public String getAnswer(long message) {
-        return answers.get(message);
-    }
+  public String getAnswer(long message) {
+    return answers.get(message);
+  }
 
-    public void removeAnswer(long message) {
-        answers.remove(message);
-    }
+  public void removeAnswer(long message) {
+    answers.remove(message);
+  }
 }

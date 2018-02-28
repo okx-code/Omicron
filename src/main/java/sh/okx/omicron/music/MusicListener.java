@@ -10,32 +10,32 @@ import sh.okx.omicron.Omicron;
 import java.util.List;
 
 public class MusicListener extends ListenerAdapter {
-    private Omicron omicron;
+  private Omicron omicron;
 
-    public MusicListener(Omicron omicron) {
-        this.omicron = omicron;
+  public MusicListener(Omicron omicron) {
+    this.omicron = omicron;
+  }
+
+  @Override
+  public void onGuildVoiceLeave(GuildVoiceLeaveEvent e) {
+    VoiceChannel left = e.getChannelLeft();
+    List<Member> members = left.getMembers();
+    if (members.size() > 1) {
+      return;
     }
 
-    @Override
-    public void onGuildVoiceLeave(GuildVoiceLeaveEvent e) {
-        VoiceChannel left = e.getChannelLeft();
-        List<Member> members = left.getMembers();
-        if(members.size() > 1) {
-            return;
-        }
-
-        if(members.get(0).getUser().getId().equals(e.getJDA().getSelfUser().getId())) {
-            omicron.getMusicManager().leave(left.getGuild());
-        }
+    if (members.get(0).getUser().getId().equals(e.getJDA().getSelfUser().getId())) {
+      omicron.getMusicManager().leave(left.getGuild());
     }
+  }
 
-    @Override
-    public void onGuildVoiceMove(GuildVoiceMoveEvent e) {
-        if(e.getMember().getUser().getIdLong() == e.getJDA().getSelfUser().getIdLong()) {
-            if(e.getChannelJoined().getMembers().size() > 1) {
-                return;
-            }
-            omicron.getMusicManager().leave(e.getGuild());
-        }
+  @Override
+  public void onGuildVoiceMove(GuildVoiceMoveEvent e) {
+    if (e.getMember().getUser().getIdLong() == e.getJDA().getSelfUser().getIdLong()) {
+      if (e.getChannelJoined().getMembers().size() > 1) {
+        return;
+      }
+      omicron.getMusicManager().leave(e.getGuild());
     }
+  }
 }
